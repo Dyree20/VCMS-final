@@ -1,0 +1,106 @@
+/* Overlay background */
+.auth-overlay-v2 {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999 !important;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Dialog box */
+.auth-dialog-v2 {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 550px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: slideDown 0.4s ease-out;
+  border-left: 5px solid #dc3545;
+}
+
+/* Spinner */
+.auth-spinner-v2 {
+  width: 50px;
+  height: 50px;
+  margin: 20px auto;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4CAF50;
+  border-radius: 50%;
+  animation: authSpin-v2 1s linear infinite;
+}
+
+/* Success icon */
+.auth-success-v2 {
+  font-size: 36px;
+  color: #4CAF50;
+  margin: 20px 0;
+}
+
+/* Messages */
+.auth-message-v2 {
+  font-size: 18px;
+  color: #333;
+  margin-top: 10px;
+}
+
+/* Error message styling */
+.auth-overlay-v2 .message {
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+  line-height: 1.5;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.auth-overlay-v2 .success-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.auth-overlay-v2 .success-icon[style*="color: #dc3545"],
+.auth-overlay-v2 .success-icon[style*="color: red"] {
+  color: #dc3545 !important;
+}
+
+.auth-sub-v2 {
+  font-size: 14px;
+  color: #777;
+  margin-top: 5px;
+}
+
+/* Animations */
+@keyframes authSpin-v2 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes authFadeIn-v2 {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Hidden state */
+.hidden {
+    display: none;
+}

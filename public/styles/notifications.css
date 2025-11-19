@@ -1,0 +1,7 @@
+@import url('enforcer-dashboard.css');
+
+/* Notifications specific tweaks */
+.entries { max-width: 1200px; margin: 20px auto; }
+.entry { margin-bottom: 12px; }
+.entry-left i { font-size: 1.2rem; }
+.entry-right p { font-weight: 700; }

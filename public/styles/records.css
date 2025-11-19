@@ -1,0 +1,69 @@
+@import url('enforcer-dashboard.css');
+
+/* Records specific tweaks */
+.table-container { 
+  max-width: 1200px; 
+  margin: 20px auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container table { 
+  width: 100%; 
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.table-container thead th { 
+  padding: 12px 15px;
+  font-size: 14px;
+}
+
+.table-container tbody td { 
+  padding: 12px 15px;
+  font-size: 14px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .table-container {
+    margin: 15px auto;
+  }
+
+  .table-container table {
+    min-width: 750px;
+    font-size: 12px;
+  }
+
+  .table-container thead th {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .table-container tbody td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}
+
+/* Action buttons styling */
+.action-btn {
+	background: #2b58ff;
+	color: #fff;
+	border: none;
+	padding: 6px 10px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.action-btn:hover { opacity: 0.9; }
+
+/* Mobile button responsive */
+@media (max-width: 480px) {
+  .action-btn {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}

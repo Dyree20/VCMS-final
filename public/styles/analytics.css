@@ -1,0 +1,369 @@
+/* Analytics Dashboard Styles */
+
+.analytics-container {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.analytics-header {
+  margin-bottom: 40px;
+}
+
+.analytics-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: -0.5px;
+}
+
+.analytics-title i {
+  color: #2b58ff;
+  font-size: 32px;
+}
+
+.analytics-subtitle {
+  margin: 8px 0 0 0;
+  color: #718096;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Metrics Grid */
+.analytics-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.analytics-metric-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 28px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.analytics-metric-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.analytics-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.analytics-metric-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analytics-metric-header i {
+  font-size: 24px;
+  color: #2b58ff;
+  opacity: 0.2;
+}
+
+.analytics-metric-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: #2b58ff;
+  margin-bottom: 12px;
+}
+
+.analytics-metric-subtitle {
+  font-size: 12px;
+  color: #a0aec0;
+  font-weight: 600;
+}
+
+/* Charts Section */
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.analytics-chart-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  border: 1px solid #f0f0f0;
+}
+
+.analytics-chart-title {
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #2b58ff;
+}
+
+.analytics-chart-container {
+  position: relative;
+  height: 300px;
+}
+
+/* Sections */
+.analytics-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 24px;
+}
+
+.analytics-section-title {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #2b58ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Table Styles */
+.analytics-table-wrapper {
+  overflow-x: auto;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.analytics-table thead {
+  background: linear-gradient(135deg, #f8f9fc 0%, #f1f5f9 100%);
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 2px solid #2b58ff;
+}
+
+.analytics-table thead th {
+  padding: 18px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a202c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analytics-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.analytics-table tbody tr:hover {
+  background: #f8f9fc;
+  box-shadow: 0 2px 8px rgba(43, 88, 255, 0.08) inset;
+}
+
+.analytics-table tbody td {
+  padding: 18px;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.rank-badge {
+  font-weight: 700;
+  color: #2b58ff;
+  font-size: 16px;
+  min-width: 40px;
+}
+
+.enforcer-name {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.metric-number {
+  font-weight: 700;
+  color: #2b58ff;
+  font-size: 15px;
+}
+
+.metric-money {
+  font-weight: 700;
+  color: #16a34a;
+  font-size: 15px;
+}
+
+/* Appeal Statistics */
+.analytics-appeal-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.appeal-stat {
+  background: linear-gradient(135deg, #f8f9fc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  border: 2px solid #e8eaf6;
+  transition: all 0.3s ease;
+}
+
+.appeal-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(43, 88, 255, 0.15);
+}
+
+.appeal-stat.pending {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.appeal-stat.review {
+  border-color: #60a5fa;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.appeal-stat.approved {
+  border-color: #34d399;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.appeal-stat.rejected {
+  border-color: #f87171;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.appeal-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.appeal-stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .analytics-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-appeal-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-container {
+    padding: 20px;
+  }
+
+  .analytics-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .analytics-metric-card {
+    padding: 20px;
+  }
+
+  .analytics-metric-value {
+    font-size: 28px;
+  }
+
+  .analytics-chart-card {
+    padding: 20px;
+  }
+
+  .analytics-title {
+    font-size: 24px;
+  }
+
+  .analytics-section {
+    padding: 20px;
+  }
+
+  .analytics-section-title {
+    font-size: 18px;
+  }
+
+  .analytics-table thead th {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .analytics-table tbody td {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .analytics-appeal-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-metrics-grid {
+    gap: 12px;
+  }
+
+  .analytics-metric-card {
+    padding: 16px;
+  }
+
+  .analytics-metric-header h3 {
+    font-size: 12px;
+  }
+
+  .analytics-metric-value {
+    font-size: 24px;
+  }
+
+  .analytics-metric-subtitle {
+    font-size: 11px;
+  }
+
+  .analytics-title {
+    font-size: 20px;
+  }
+
+  .analytics-appeal-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-muted {
+    color: #a0aec0;
+  }
+}

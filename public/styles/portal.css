@@ -1,0 +1,151 @@
+body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background-image: url('/images/bg.jpg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.ticket-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 25px;
+    padding: 25px 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    color: #fff;
+    text-align: center;
+    margin: 20px;
+    transition: all 0.3s ease;
+}
+
+.ticket-header {
+    margin-bottom: 20px;
+}
+
+.ticket-header h2 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    color: #000000ff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.ticket-header small {
+    font-size: 13px;
+    opacity: 0.9;
+    color: #000000ff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.ticket-info {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 18px;
+    border-radius: 15px;
+    margin-top: 10px;
+}
+
+.ticket-info p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: #f0f0f0;
+}
+
+.label {
+    font-weight: 600;
+    color: #fff;
+}
+
+.photo {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.photo img {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.status {
+    margin-top: 15px;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status.paid {
+    background: rgba(40, 167, 69, 0.2);
+    color: #b4f5b4;
+    border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+.status.unpaid {
+    background: rgba(220, 53, 69, 0.2);
+    color: #ffb4b4;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.enforcer {
+    margin-top: 15px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.pay-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 15px;
+    margin-top: 20px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.pay-btn:hover {
+    background: linear-gradient(135deg, #0096ff, #0048ff);
+    transform: scale(1.05);
+}
+
+.ticket-footer {
+    margin-top: 25px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .ticket-card {
+        border-radius: 18px;
+        padding: 20px;
+    }
+
+    .ticket-info {
+        font-size: 13px;
+    }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}

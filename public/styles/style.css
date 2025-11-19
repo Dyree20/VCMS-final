@@ -1,0 +1,126 @@
+* {font-family: 'Poppins', sans-serif;margin: 0;padding: 0;box-sizing: border-box;}
+html, body {position: relative;min-height: 100vh;width: 100%;background: #efefef;
+    overflow: auto;-ms-overflow-style: none;scrollbar-width: none;}
+html::-webkit-scrollbar {display: none;}
+
+.sidebar {position: fixed;top: 0;left: 0;height: 100%;width: 250px;background: #ffffff;padding: 5px 16px;box-shadow: 5px 0 30px rgba(0,0,0,0.1);display: flex;flex-direction: column;}
+.sidebar .logo_content .logo {color: #4895ef;display: flex;height: auto;width: 100%;font-size: 30px;margin-left: 5px;align-items: center;}
+.sidebar .logo_content .logo .logo_name {font-size: 23px;font-weight: 600;margin: 0 10px;}
+.sidebar .src { margin-top: 20px;height: 50px;width: 100%;position: relative;}
+.sidebar .src .input {position: absolute;height: 100%;width: 100%;border-radius: 20px;outline: none;border: none;font-size: 16px;
+    padding: 0 20px;background: #2b35af;padding-left: 50px;color: #ffffff;box-shadow: 0 5px 10px rgba(0,0,0,0.2);}
+.sidebar .src .input::placeholder {color: #ffffff85;}
+.sidebar .src .bx-search {position: absolute;left: 15px;top: 50%;transform: translateY(-50%);font-size: 22px;color: #fff;cursor: pointer;z-index: 99;}
+.sidebar .src .bx-search:hover ~ .input {background: #e4e1e8;color: #000;}
+.sidebar ul {margin-top: 20px;list-style: none;flex: 1;overflow-y: auto;padding-bottom: 10px;}
+.sidebar ul li {position: relative;margin: 10px 0;}
+.sidebar ul li a {display: flex;align-items: center;text-decoration: none;color: #333;border-radius: 12px;padding: 10px;transition: all 0.3s ease;}
+.sidebar ul li a:hover {background: #4895ef;color: #fff;}
+.sidebar ul li a i {min-width: 40px;text-align: center;font-size: 22px;}
+.sidebar ul li .tooltip {position: absolute;left: 110%;top: 50%;transform: translateY(-50%);background: #4895ef;color: #fff;
+    border-radius: 6px;padding: 5px 10px;font-size: 14px;white-space: nowrap;opacity: 0;pointer-events: none;transition: 0.3s;
+}
+.sidebar ul li:hover .tooltip {opacity: 1;pointer-events: auto;}
+.topbar {display: flex;justify-content: space-between;align-items: center;padding: 15px 20px;background: #2b35af;box-shadow: 0 2px 4px rgba(0,0,0,0.1)  ;border-radius: 8px;}
+.profile {display: flex;align-items: center;cursor: pointer;}
+.profile img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;}
+.profile .name {font-weight: 600;margin-right: 5px;}
+.profile i {font-size: 18px;color: #555;}
+
+/* home content */
+.home_content {margin-left: 250px; padding: 20px;overflow: hidden;}
+.home_content .text {text-align: center;font-size: 22px;font-weight: bold;color: #ffffff;}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    display: none !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        width: 250px;
+        height: 100vh;
+        z-index: 1000;
+        left: -250px;
+        transition: left 0.3s ease;
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+    
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    .sidebar-toggle-btn {
+        display: block !important;
+    }
+    
+    .home_content {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+    
+    .home_content .text {
+        font-size: 18px;
+        flex: 1;
+    }
+    
+    .topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .topbar .profile {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .home_content {
+        margin-left: 0;
+        padding: 12px;
+    }
+    
+    .topbar {
+        padding: 12px 10px;
+        gap: 8px;
+    }
+    
+    .home_content .text {
+        font-size: 14px;
+    }
+    
+    .sidebar {
+        width: 220px;
+        left: -220px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
