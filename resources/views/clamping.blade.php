@@ -8,18 +8,23 @@
 
     <!-- Quick Actions -->
     <div class="actions-bar">
-        <button class="btn btn-primary" id="addBtn">➕ Add New Clamping</button>
+        <button class="btn btn-primary" id="addBtn"><i class="fa-solid fa-plus" style="margin-right: 6px;"></i>Add New Clamping</button>
         <!-- Search & Filter -->
-        <div class="search-filter">
-            <input type="text" class="input-text" placeholder="Search by Plate / Name">
-            <select class="select-box">
-                <option selected>Status</option>
-                <option>Pending</option>
-                <option>Paid</option>
-                <option>Released</option>
+        <form method="GET" action="{{ route('clampings') }}" class="search-filter">
+            <input type="text" name="search" class="input-text" placeholder="Search by Plate / Ticket No." value="{{ request('search') }}">
+            <select name="status" class="select-box">
+                <option value="">All Status</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
+                <option value="released" {{ request('status') == 'released' ? 'selected' : '' }}>Released</option>
             </select>
-            <button class="btn btn-secondary">Filter</button>
-        </div>
+            <input type="date" name="date_from" class="input-text" value="{{ request('date_from') }}" placeholder="From Date">
+            <input type="date" name="date_to" class="input-text" value="{{ request('date_to') }}" placeholder="To Date">
+            <button type="submit" class="btn btn-secondary">Filter</button>
+            @if(request()->anyFilled(['search', 'status', 'date_from', 'date_to']))
+                <a href="{{ route('clampings') }}" class="btn btn-secondary" style="background: #6c757d;">Clear</a>
+            @endif
+        </form>
     </div>
 
     <!-- Violations Table -->
@@ -90,7 +95,13 @@
                 </tbody>
         </table>
     </div>
-</div>
+
+    <!-- Pagination -->
+    @if($clampings->hasPages())
+    <div style="display: flex; justify-content: center; margin-top: 30px;">
+        {{ $clampings->links() }}
+    </div>
+    @endif
 
 @include('partials.add-clamping')
 

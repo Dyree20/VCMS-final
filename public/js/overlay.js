@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok && data.success) {
                     overlayMsg.textContent = "✅ Clamping added successfully!";
                     overlaySub.innerHTML = `
-                        <button id="printReceiptBtn" class="btn btn-print">🖨️ Print Receipt</button>
+                        <button id="printReceiptBtn" class="btn btn-print"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Print Receipt</button>
                         <p>or wait to be redirected...</p>
                     `;
 

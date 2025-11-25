@@ -30,12 +30,12 @@
 
         <div class="user-actions" style="margin-top:12px;">
             @if(strtolower($user->status->status ?? '') === 'pending')
-                <form id="approveForm" action="{{ route('users.approve', ['id' => $user->id]) }}" method="POST" style="display:inline">
+                <form id="approveForm" action="{{ route('users.approve', $user->id) }}" method="POST" style="display:inline">
                     @csrf
                     <button class="auth-button">Approve</button>
                 </form>
 
-                <form id="rejectForm" action="{{ route('users.reject', ['id' => $user->id]) }}" method="POST" style="display:inline">
+                <form id="rejectForm" action="{{ route('users.reject', $user->id) }}" method="POST" style="display:inline">
                     @csrf
                     <button class="auth-button" style="background:#c0392b">Reject</button>
                 </form>

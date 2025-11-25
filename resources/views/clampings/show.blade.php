@@ -87,7 +87,7 @@
                 <img src="{{ asset('storage/' . $clamping->photo) }}" alt="Clamping photo" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd; display: block;">
             @else
                 <div style="background: #f5f5f5; border: 2px dashed #ddd; border-radius: 8px; padding: 40px; text-align: center;">
-                    <p style="color: #999; font-size: 16px; margin: 0;">📷 No evidence photo available</p>
+                    <p style="color: #999; font-size: 16px; margin: 0;"><i class="fa-solid fa-camera" style="margin-right: 8px;"></i>No evidence photo available</p>
                 </div>
             @endif
         </div>
@@ -97,24 +97,24 @@
             @if(strtolower($clamping->status) === 'paid')
                 <!-- For PAID status: Show View and Release buttons only -->
                 <button onclick="window.location.href='{{ route('clampings.show', $clamping->id) }}'" class="btn btn-primary" style="padding: 12px 24px; background: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                    👁️ View
+                    <i class="fa-solid fa-eye" style="margin-right: 6px;"></i>View
                 </button>
                 <form method="POST" action="{{ route('clampings.release', $clamping->id) }}" style="display: inline;">
                     @csrf
                     <button type="submit" class="btn btn-success" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        🔓 Release
+                        <i class="fa-solid fa-lock-open" style="margin-right: 6px;"></i>Release
                     </button>
                 </form>
             @else
                 <!-- For other statuses: Show Edit, Cancel, Delete -->
                 <a href="{{ route('clampings.edit', $clamping->id) }}" class="btn btn-primary" style="padding: 12px 24px; text-decoration: none; background: #007bff; color: white; border-radius: 6px; font-weight: 600;">
-                    ✏️ Edit Status
+                    <i class="fa-solid fa-pen-to-square" style="margin-right: 6px;"></i>Edit Status
                 </a>
                 <form method="POST" action="{{ route('clampings.cancel', $clamping->id) }}" style="display: inline;">
                     @csrf
                     @if($clamping->status !== 'cancelled')
                     <button type="submit" class="btn btn-warning" style="padding: 12px 24px; background: #ffc107; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        ⛔ Cancel
+                        <i class="fa-solid fa-ban" style="margin-right: 6px;\"></i>Cancel
                     </button>
                     @else
                     <button type="submit" class="btn btn-warning" disabled style="padding: 12px 24px; background: #ccc; color: #999; border: none; border-radius: 6px; font-weight: 600; cursor: not-allowed;">
@@ -126,7 +126,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger" style="padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        🗑️ Delete
+                        <i class="fa-solid fa-trash" style="margin-right: 6px;\"></i>Delete
                     </button>
                 </form>
             @endif

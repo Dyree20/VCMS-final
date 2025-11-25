@@ -140,6 +140,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/front-desk/profile/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('front-desk.profile.edit');
     Route::put('/front-desk/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('front-desk.profile.update');
 
+    // Enforcer Profile Routes
+    Route::get('/enforcer/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('enforcer.profile');
+    Route::get('/enforcer/profile/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('enforcer.profile.edit');
+    Route::put('/enforcer/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('enforcer.profile.update');
+
     // Teams Management (Admin only)
     Route::resource('teams', \App\Http\Controllers\TeamController::class);
     Route::post('/teams/{team}/add-enforcer', [\App\Http\Controllers\TeamController::class, 'addEnforcer'])->name('teams.add-enforcer');
@@ -158,11 +163,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/fetch', [UserController::class, 'fetchUsers'])->name('users.fetch');
     Route::post('/users/{id}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('/users/{id}/reject', [UserController::class, 'reject'])->name('users.reject');
+    Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{id}/assign-zone', [UserController::class, 'assignZone'])->name('users.assign-zone');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
 
     // Clamping
     Route::get('/clampings', [ClampingController::class, 'index'])->name('clampings');
-    Route::post('/clampings', [ClampingController::class, 'store']);
+    Route::post('/clampings', [ClampingController::class, 'store'])->name('clampings.store');
     Route::get('/clampings/receipt/{id}', [ClampingController::class, 'print'])->name('clampings.print');
     Route::get('/clampings/{id}', [ClampingController::class, 'editShow'])->name('clampings.show');
     Route::get('/clampings/{id}/edit', [ClampingController::class, 'editForm'])->name('clampings.edit');
@@ -226,8 +233,8 @@ Route::get('/verify/{id}', [ClampingController::class, 'verify'])->name('clampin
 
 Route::get('/pay/{ticket_no}', [PaymentController::class, 'createCheckout']);
 Route::post('/webhook/paymongo', [PayMongoWebhookController::class, 'handle']);
-Route::get('/payment/success/{id}', [PaymentController::class, 'success']);
-Route::get('/payment/cancel', [PaymentController::class, 'cancel']);
+Route::get('/payment/success/{id}', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
 
 // Route::get('/enforcers', function () {
 //         return view('dashboards.overview'); 

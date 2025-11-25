@@ -59,7 +59,7 @@
 
             <!-- Location Hint -->
             <p class="form-hint">
-                💡 <strong>Tip:</strong> Get coordinates from <a href="https://maps.google.com" target="_blank">Google Maps</a> or <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a>
+                <i class="fa-solid fa-lightbulb" style="margin-right: 8px; color: #ffc107;"></i><strong>Tip:</strong> Get coordinates from <a href="https://maps.google.com" target="_blank">Google Maps</a> or <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a>
             </p>
         </div>
 
@@ -103,10 +103,10 @@
         <!-- Form Actions -->
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">
-                ✓ Create Zone
+                <i class="fa-solid fa-check"></i> Create Zone
             </button>
             <a href="{{ route('zones.index') }}" class="btn btn-secondary">
-                ✕ Cancel
+                <i class="fa-solid fa-xmark" style="margin-right: 6px;"></i>Cancel
             </a>
         </div>
     </form>

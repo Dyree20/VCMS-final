@@ -45,17 +45,20 @@ class PayMongoWebhookController extends Controller
                     // Prevent duplicate payee entries
                     if (!Payee::where('ticket_no', $clamping->ticket_no)->exists()) {
                         Payee::create([
+                            'clamping_id' => $clamping->id,
                             'ticket_no' => $clamping->ticket_no,
                             'name' => 'Online Payment', // ✅ no null
                             'contact_number' => null,
                             'payment_method' => 'online',
                             'amount_paid' => $amount > 0 ? $amount : $clamping->fine_amount,
+                            'amount' => $amount > 0 ? $amount : $clamping->fine_amount,
+                            'status' => 'completed',
                             'payment_date' => now(),
                         ]);
 
-                        // Update clamping status
-                        $clamping->update(['status' => 'Paid']);
-                        Log::info("✅ Ticket {$clamping->ticket_no} marked as paid.");
+                        // Update clamping status to paid (lowercase for consistency) - release button will appear for manual release
+                        $clamping->update(['status' => 'paid']);
+                        Log::info("✅ Ticket {$clamping->ticket_no} marked as paid. Release button will appear for manual release.");
                     }
                 } else {
                     Log::warning("⚠️ No clamping found for reference: {$reference_id}");

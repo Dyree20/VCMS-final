@@ -4,7 +4,7 @@
     <!-- GPS Tracker Section -->
     <div id="gps-tracker-container" class="gps-tracker-section">
         <div class="gps-header">
-            <h2>📍 Location Tracking</h2>
+            <h2><i class="fa-solid fa-location-dot"></i> Location Tracking</h2>
             <div class="gps-status-container">
                 <span id="gps-status-badge" class="status-badge status-offline">OFFLINE</span>
                 <span id="gps-tracking-indicator" class="tracking-indicator"></span>
@@ -14,10 +14,10 @@
         <!-- GPS Controls -->
         <div class="gps-controls">
             <button id="gps-start-btn" class="gps-btn gps-btn-primary">
-                🚀 Start Tracking
+                <i class="fa-solid fa-play"></i> Start Tracking
             </button>
             <button id="gps-stop-btn" class="gps-btn gps-btn-danger">
-                🛑 Stop Tracking
+                <i class="fa-solid fa-stop"></i> Stop Tracking
             </button>
         </div>
 
@@ -26,13 +26,13 @@
             <label>Set Status:</label>
             <div class="status-buttons">
                 <button class="status-btn status-btn-online" data-status="online">
-                    🟢 Online
+                    <i class="fa-solid fa-circle" style="color: #28a745; margin-right: 6px;"></i>Online
                 </button>
                 <button class="status-btn status-btn-break" data-status="on_break">
-                    🟡 On Break
+                    <i class="fa-solid fa-circle" style="color: #ffc107; margin-right: 6px;"></i>On Break
                 </button>
                 <button class="status-btn status-btn-offline" data-status="offline">
-                    🔴 Offline
+                    <i class="fa-solid fa-circle" style="color: #dc3545; margin-right: 6px;"></i>Offline
                 </button>
             </div>
         </div>
@@ -44,7 +44,7 @@
 
         <!-- Info Box -->
         <div class="gps-info-box">
-            <h4>📝 How to Use:</h4>
+            <h4><i class="fa-solid fa-note-sticky" style="margin-right: 8px;"></i>How to Use:</h4>
             <ul>
                 <li>Click "Start Tracking" to enable GPS location sharing</li>
                 <li>Your location will be updated every 30 seconds</li>

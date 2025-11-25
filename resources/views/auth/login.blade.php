@@ -16,7 +16,7 @@
             var icon = document.getElementById('loginStatusIcon');
             var msg = document.getElementById('loginStatusMessage');
             if (overlay && icon && msg) {
-                icon.textContent = '❌';
+                icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
                 icon.style.color = 'red';
                 msg.textContent = @json($errors->first('login'));
                 overlay.classList.remove('hidden');
@@ -78,7 +78,7 @@
                 <button type="submit" class="auth-button">Login</button>
                 <div id="loginStatusOverlay" class="auth-overlay-v2 hidden">
                     <div class="auth-dialog-v2">
-                        <div id="loginStatusIcon" class="success-icon">❌</div>
+                        <div id="loginStatusIcon" class="success-icon"><i class="fa-solid fa-circle-xmark"></i></div>
                         <div id="loginStatusMessage" class="message"></div>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
         <!-- <div id="submitOverlay" class="overlay hidden">
             <div class="overlay-card">
                 <div id="overlaySpinner" class="spinner"></div>
-                <div id="overlaySuccess" class="success-icon">✅</div>
+                <div id="overlaySuccess" class="success-icon"><i class="fa-solid fa-check-circle"></i></div>
                 <div id="overlayMessage" class="message">Saving...</div>
                 <div id="overlaySub" class="sub"></div>
             </div>
@@ -110,7 +110,7 @@
         <div id="submitOverlay" class="auth-overlay-v2 hidden">
             <div class="auth-dialog-v2">
                 <div id="overlaySpinner" class="auth-spinner-v2"></div>
-                <div id="overlaySuccess" class="success-icon">✅</div>
+                <div id="overlaySuccess" class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div id="overlayMessage" class="message">Saving...</div>
                 <div id="overlaySub" class="sub"></div>
             </div>
@@ -119,7 +119,7 @@
         <div id="loginOverlay" class="auth-overlay-v2 hidden">
             <div class="auth-dialog-v2">
                 <div id="loginSpinner" class="auth-spinner-v2"></div>
-                <div id="loginSuccess" class="auth-success-v2" style="display:none;">✅</div>
+                <div id="loginSuccess" class="auth-success-v2" style="display:none;"><i class="fa-solid fa-circle-check"></i></div>
                 <div id="loginMessage" class="auth-message-v2">Logging in...</div>
                 <div id="loginSub" class="auth-sub-v2"></div>
             </div>

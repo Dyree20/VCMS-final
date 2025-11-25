@@ -43,12 +43,12 @@
                         <td class="zone-status"><span class="badge status-{{ strtolower($zone->status) }}">{{ ucfirst($zone->status) }}</span></td>
                         <td class="zone-creator">{{ $zone->createdBy->f_name ?? 'Admin' }}</td>
                         <td class="zone-actions">
-                            <a href="{{ route('zones.show', $zone) }}" class="action-btn view-btn" title="View">👁️</a>
-                            <a href="{{ route('zones.edit', $zone) }}" class="action-btn edit-btn" title="Edit">✏️</a>
+                            <a href="{{ route('zones.show', $zone) }}" class="action-btn view-btn" title="View"><i class="fa-solid fa-eye"></i></a>
+                            <a href="{{ route('zones.edit', $zone) }}" class="action-btn edit-btn" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                             <form action="{{ route('zones.destroy', $zone) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this zone?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="action-btn delete-btn" title="Delete">🗑️</button>
+                                <button type="submit" class="action-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                             </form>
                         </td>
                     </tr>

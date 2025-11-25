@@ -63,7 +63,7 @@ class EnforcerController extends Controller
     {
         $user = auth()->user();
         $user->load(['role', 'status', 'details']);
-        return view('dashboards.edit-profile', compact('user'));
+        return view('admin.edit-profile', compact('user'));
     }
 
     public function updateProfile(Request $request)
@@ -77,6 +77,7 @@ class EnforcerController extends Controller
             'phone' => 'nullable|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address' => 'nullable|string',
+            'nationality' => 'nullable|string|max:255',
             'gender' => 'nullable|string|in:Male,Female,Other',
             'birthdate' => 'nullable|date',
         ]);
@@ -105,8 +106,9 @@ class EnforcerController extends Controller
             [
                 'photo' => $path,
                 'address' => $validated['address'] ?? null,
+                'nationality' => $validated['nationality'] ?? null,
                 'gender' => $validated['gender'] ?? null,
-                'birthdate' => $validated['birthdate'] ?? null,
+                'birth_date' => $validated['birthdate'] ?? null,
             ]
         );
 

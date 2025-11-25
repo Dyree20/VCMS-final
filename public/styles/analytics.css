@@ -9,6 +9,55 @@
 
 .analytics-header {
   margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.analytics-header-title {
+  flex: 1;
+}
+
+.analytics-period-selector {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.period-btn {
+  padding: 10px 20px;
+  border: 2px solid #e0e0e0;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.period-btn:hover {
+  border-color: #2b58ff;
+  color: #2b58ff;
+}
+
+.period-btn.active {
+  background: #2b58ff;
+  border-color: #2b58ff;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .analytics-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .analytics-period-selector {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .analytics-title {

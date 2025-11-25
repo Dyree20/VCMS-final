@@ -19,7 +19,7 @@
       <h2>Add Clamping</h2>
     </div>
 
-    <form id="clampingForm" action="{{ route('clampings') }}" method="POST" enctype="multipart/form-data">
+    <form id="clampingForm" action="{{ route('clampings.store') }}" method="POST" enctype="multipart/form-data">
   @csrf
 
   <label for="plate">Plate Number</label>
@@ -29,7 +29,23 @@
   <input type="text" id="vehicle" name="vehicle_type" placeholder="Enter vehicle type" required>
 
   <label for="location">Location</label>
-  <input type="text" id="location" name="location" placeholder="Enter clamping location" required>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: flex-start;">
+    <div>
+      <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Select from Parking Zones</label>
+      <select id="parkingZoneSelect" name="parking_zone_id" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+        <option value="">-- Select a zone --</option>
+        @forelse($parkingZones as $zone)
+          <option value="{{ $zone->id }}" data-zone-name="{{ $zone->name }}">{{ $zone->name }}</option>
+        @empty
+          <option value="" disabled>No active parking zones available</option>
+        @endforelse
+      </select>
+    </div>
+    <div>
+      <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Or Type Manually</label>
+      <input type="text" id="location" name="location" placeholder="Enter or select location" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+    </div>
+  </div>
 
   <label for="reason">Reason</label>
   <textarea id="reason" name="reason" placeholder="Enter reason for clamping" required></textarea>
@@ -62,7 +78,7 @@
 
 </form>
     <script>
-        window.clampingsRoute = "{{ route('clampings') }}";
+        window.clampingsRoute = "{{ route('clampings.store') }}";
     </script>
      <script src="/../../js/navigation.js"></script>
      <script src="/../../js/enforcer-add-clamping.js"></script>

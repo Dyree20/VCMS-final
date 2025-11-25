@@ -39,7 +39,13 @@
                 <i class="fa-solid fa-shield"></i>
                 <span>Security</span>
             </a>
-            <a href="#teams" class="nav-item" data-section="teams">
+            @if(strtolower($user->role->name ?? '') === 'enforcer')
+            <a href="{{ route('enforcer.location') }}" class="nav-item">
+                <i class="fa-solid fa-map-pin"></i>
+                <span>GPS Location</span>
+            </a>
+            @endif
+            <a href="#notifications" class="nav-item" data-section="notifications">
                 <i class="fa-solid fa-people-group"></i>
                 <span>Teams</span>
             </a>
@@ -901,6 +907,45 @@
         .settings-content {
             padding: 8px;
             gap: 8px;
+        }
+    }
+
+    /* Enhanced mobile responsiveness for all screen sizes */
+    @media (max-width: 600px) {
+        .account-settings-wrapper {
+            margin: 0;
+            padding: 0;
+        }
+
+        .settings-sidebar {
+            display: none !important;
+        }
+
+        .settings-content {
+            max-width: 100%;
+            margin: 0;
+            padding: 12px;
+        }
+
+        .profile-header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            margin: 0 auto;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-card {
+            padding: 12px;
+        }
+
+        .settings-section {
+            padding: 12px;
         }
     }
 </style>

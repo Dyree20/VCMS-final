@@ -9,18 +9,19 @@
       background: #f6f7fb;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
-      padding: 20px;
+      padding: 16px;
     }
 
     .container {
       background: #fff;
       width: 100%;
-      max-width: 400px;
+      max-width: 800px;
       border-radius: 20px;
-      padding: 25px;
+      padding: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-top: 20px;
     }
 
     .top-bar {
@@ -184,5 +185,156 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 20px;
+    margin-top: 15px;
+    border-radius: 16px;
+  }
+
+  .top-bar {
+    margin-bottom: 20px;
+  }
+
+  .top-bar h2 {
+    font-size: 1rem;
+  }
+
+  label {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+
+  input, select, textarea {
+    padding: 10px;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  #takePhotoBtn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  #preview {
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 8px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 16px;
+    margin-top: 12px;
+    border-radius: 14px;
+  }
+
+  .top-bar {
+    margin-bottom: 18px;
+  }
+
+  .top-bar i {
+    font-size: 1rem;
+    margin-right: 8px;
+  }
+
+  .top-bar h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  label {
+    font-size: 0.75rem;
+    margin-bottom: 3px;
+  }
+
+  input, select, textarea {
+    padding: 10px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  textarea {
+    height: 70px;
+  }
+
+  button {
+    padding: 11px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  #takePhotoBtn {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 25px;
+  }
+
+  #preview {
+    max-height: 120px;
+    margin-bottom: 12px;
+  }
+
+  .popup-content {
+    padding: 20px 30px;
+    width: 90vw;
+    max-width: 300px;
+  }
+
+  .popup-content i {
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+
+  .popup-content p {
+    font-size: 16px;
+  }
+}
+
+/* Landscape mode support */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    padding: 8px;
+    align-items: flex-start;
+  }
+
+  .container {
+    margin-top: 8px;
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .top-bar {
+    margin-bottom: 12px;
+  }
+
+  input, select, textarea {
+    margin-bottom: 10px;
+    padding: 8px;
+  }
+
+  textarea {
+    height: 60px;
   }
 }

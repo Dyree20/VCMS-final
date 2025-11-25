@@ -16,13 +16,13 @@
     <!-- Success/Error Messages -->
     @if(session('success'))
         <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 6px; margin-bottom: 25px; border-left: 4px solid #28a745;">
-            <strong>✓ Success!</strong> {{ session('success') }}
+            <strong><i class="fa-solid fa-check"></i> Success!</strong> {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
         <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 6px; margin-bottom: 25px; border-left: 4px solid #dc3545;">
-            <strong>⚠ Error!</strong> {{ session('error') }}
+            <strong><i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px; color: #dc3545;"></i>Error!</strong> {{ session('error') }}
         </div>
     @endif
 
@@ -109,10 +109,10 @@
             <!-- Action Buttons -->
             <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 25px; border-top: 1px solid #e0e0e0;">
                 <button type="submit" style="flex: 1; padding: 14px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 16px; cursor: pointer; transition: background 0.3s;">
-                    ✓ Process Payment
+                    <i class="fa-solid fa-check"></i> Process Payment
                 </button>
                 <a href="{{ route('front-desk.payments') }}" style="flex: 1; padding: 14px 24px; background: #6c757d; color: white; border-radius: 6px; font-weight: 600; font-size: 16px; text-decoration: none; text-align: center; transition: background 0.3s;">
-                    ✕ Cancel
+                    <i class="fa-solid fa-times"></i> Cancel
                 </a>
             </div>
         </form>

@@ -10,9 +10,24 @@ class UserDetail extends Model
         'user_id',
         'photo',
         'address',
+        'nationality',
         'gender',
         'birth_date',
     ];
+
+    protected $casts = [
+        'birth_date' => 'date',
+    ];
+
+    public function getBirthdateAttribute()
+    {
+        return $this->attributes['birth_date'] ?? null;
+    }
+
+    public function setBirthdateAttribute($value): void
+    {
+        $this->attributes['birth_date'] = $value;
+    }
 
     public function user()
     {

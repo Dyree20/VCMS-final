@@ -4,8 +4,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const preview = document.getElementById('preview');
     const form = document.getElementById('clampingForm');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const parkingZoneSelect = document.getElementById('parkingZoneSelect');
+    const locationInput = document.getElementById('location');
 
     photoInput.style.display = "none";
+
+    // Handle parking zone selection - populate location field when zone is selected
+    if (parkingZoneSelect) {
+        parkingZoneSelect.addEventListener('change', (e) => {
+            if (e.target.value) {
+                const zoneName = e.target.options[e.target.selectedIndex].getAttribute('data-zone-name');
+                if (zoneName) {
+                    locationInput.value = zoneName;
+                }
+            }
+        });
+    }
 
     // Open camera
     takePhotoBtn.addEventListener('click', () => {
@@ -33,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const popupMessage = document.getElementById("popupMessage");
         popupMessage.innerHTML = `
             <p>${message}</p>
-            ${id ? `<button id="printReceiptBtn" style="margin-top: 15px; padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">🖨️ Print Receipt</button>` : ""}
+            ${id ? `<button id="printReceiptBtn" style="margin-top: 15px; padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Print Receipt</button>` : ""}
         `;
         popup.style.display = "flex";
 

@@ -57,7 +57,7 @@
         <div id="submitOverlay" class="auth-overlay-v2 hidden">
             <div class="auth-dialog-v2">
                 <div id="overlaySpinner" class="auth-spinner-v2"></div>
-                <div id="overlaySuccess" class="success-icon">✅</div>
+                <div id="overlaySuccess" class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div id="overlayMessage" class="message">Saving...</div>
                 <div id="overlaySub" class="sub"></div>
             </div>

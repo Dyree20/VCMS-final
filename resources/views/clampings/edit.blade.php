@@ -79,16 +79,16 @@
             <!-- Form Actions -->
             <div style="display: flex; gap: 12px;">
                 <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                    ✓ Update Status
+                    <i class="fa-solid fa-check"></i> Update Status
                 </button>
                 <a href="{{ route('clampings.show', $clamping->id) }}" class="btn btn-secondary" style="flex: 1; padding: 12px 24px; background: #6c757d; color: white; border-radius: 6px; font-weight: 600; text-decoration: none; text-align: center; font-size: 16px;">
-                    ✕ Cancel
+                    <i class="fa-solid fa-xmark" style="margin-right: 6px;"></i>Cancel
                 </a>
             </div>
         </form>
 
         <!-- Release Button (Only if Status is Paid) -->
-        @if($clamping->status === 'paid')
+        @if(strtolower($clamping->status) === 'paid')
             <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
                 <div style="background: #c8e6c9; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
                     <p style="margin: 0; font-size: 13px; color: #2e7d32; line-height: 1.6;">
@@ -98,7 +98,7 @@
                 <form method="POST" action="{{ route('clampings.release', $clamping->id) }}" style="display: flex;">
                     @csrf
                     <button type="submit" class="btn btn-release" style="flex: 1; padding: 14px 24px; background: #4caf50; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px; transition: background 0.3s ease;">
-                        🔓 Release Vehicle
+                        <i class="fa-solid fa-lock-open" style="margin-right: 6px;"></i>Release Vehicle
                     </button>
                 </form>
             </div>

@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 class PaymentController extends Controller
 {   
-    public function index()
+    public function index(Request $request)
     {
         $today = Carbon::today()->toDateString();
 
@@ -30,18 +30,41 @@ class PaymentController extends Controller
             ->whereDate('date_clamped', $today)
             ->count();
 
-        // Only show payments for non-archived clampings
-        $payments = Payee::with('clamping')
-            ->whereHas('clamping', function($q) {
-                $q->whereNotIn('status', ['released', 'cancelled']);
-            })
-            ->get();
+        // Show all clampings (excluding released/cancelled) with their payment information
+        // This allows admins to see all clampings and their payment status
+        $query = Clamping::with(['user', 'payees'])
+            ->whereNotIn('status', ['released', 'cancelled'])
+            ->orderBy('created_at', 'desc');
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('ticket_no', 'like', "%{$search}%")
+                  ->orWhere('plate_no', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply status filter
+        if ($request->filled('status') && $request->status !== 'All Status') {
+            $query->where('status', $request->status);
+        }
+
+        // Apply date range filter
+        if ($request->filled('start_date')) {
+            $query->whereDate('date_clamped', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('date_clamped', '<=', $request->end_date);
+        }
+
+        $clampings = $query->paginate(20);
 
         return view('payment', compact(
             'totalCollected',
             'unpaidViolations',
             'ticketsToday',
-            'payments'
+            'clampings'
         ));
     }
 
@@ -56,20 +79,35 @@ class PaymentController extends Controller
 
         $clamping = Clamping::where('ticket_no', $validated['ticket_no'])->first();
 
-        if ($clamping->status === 'paid') {
+        if (!$clamping) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found.'
+            ], 404);
+        }
+
+        // Check if already paid (case-insensitive)
+        if (strtolower($clamping->status) === 'paid') {
             return response()->json([
                 'success' => false,
                 'message' => 'This ticket has already been paid.'
             ], 400); // 400 Bad Request
         }
 
+        // Add clamping_id to validated data
+        $validated['clamping_id'] = $clamping->id;
+        $validated['amount'] = $validated['amount_paid'];
+        $validated['status'] = 'completed';
+        $validated['payment_date'] = now();
+
         $payee = Payee::create($validated);
 
-        $clamping->update(['status' => 'Paid']);
+        // Update clamping status to paid (lowercase for consistency) - release button will appear for manual release
+        $clamping->update(['status' => 'paid']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Payment recorded successfully.',
+            'message' => 'Payment recorded successfully. Please release the vehicle when ready.',
             'data'    => $payee,
         ], 201);
     }
@@ -127,14 +165,25 @@ class PaymentController extends Controller
             $clamping = Clamping::where('ticket_no', $reference_id)->first();
 
             if ($clamping) {
-                Payee::create([
-                    'ticket_no' => $clamping->ticket_no,
-                    'name' => 'Online Payment',
-                    'payment_method' => 'online',
-                    'amount_paid' => $amount,
-                ]);
+                // Prevent duplicate payee entries
+                if (!Payee::where('clamping_id', $clamping->id)->exists()) {
+                    Payee::create([
+                        'clamping_id' => $clamping->id,
+                        'ticket_no' => $clamping->ticket_no,
+                        'name' => 'Online Payment',
+                        'payment_method' => 'online',
+                        'amount_paid' => $amount > 0 ? $amount : $clamping->fine_amount,
+                        'amount' => $amount > 0 ? $amount : $clamping->fine_amount,
+                        'status' => 'completed',
+                        'payment_date' => now(),
+                    ]);
 
-                $clamping->update(['status' => 'paid']);
+                    // Update clamping status to paid (lowercase for consistency) - release button will appear for manual release
+                    $clamping->update(['status' => 'paid']);
+                    Log::info('Payment processed via webhook. Release button will appear for manual release.', [
+                        'ticket_no' => $clamping->ticket_no
+                    ]);
+                }
             }
         }
 
@@ -144,31 +193,56 @@ class PaymentController extends Controller
     // ✅ Step 3: Show success and cancel pages
     public function success($id)
     {
+        // If user is not authenticated, redirect to login
+        if (!auth()->check()) {
+            return redirect()->route('login.form')->with('error', 'Session expired. Please log in again.');
+        }
+
         $clamping = Clamping::findOrFail($id);
 
-        // ✅ Update clamping status
-        $clamping->update(['status' => 'paid']);
+        // Check if payment already exists to prevent duplicates
+        $existingPayment = Payee::where('clamping_id', $clamping->id)->first();
+        
+        if (!$existingPayment) {
+            // ✅ Insert into payees table
+            Payee::create([
+                'clamping_id' => $clamping->id,
+                'ticket_no' => $clamping->ticket_no,
+                'name' => 'Online Payment',
+                'contact_number' => null,
+                'payment_method' => 'online',
+                'amount_paid' => $clamping->fine_amount,
+                'amount' => $clamping->fine_amount,
+                'status' => 'completed',
+                'payment_date' => now(),
+            ]);
+        }
 
-        // ✅ Insert into payees table
-        Payee::create([
-            'ticket_no' => $clamping->ticket_no,
-            'name' => 'Walk-in Payer', // or fetch from authenticated user
-            'contact_number' => 'N/A',
-            'payment_method' => 'online',
-            'amount_paid' => $clamping->fine_amount,
-            'payment_date' => now(),
-        ]);
+        // ✅ Update clamping status to paid (lowercase for consistency) - release button will appear for manual release
+        if (strtolower($clamping->status) !== 'paid') {
+            $clamping->update(['status' => 'paid']);
+        }
+
+        // Generate QR code
+        $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(150)->generate(url('/verify/' . $clamping->id));
 
         // ✅ Return to success view with updated info
         return view('payment.success', [
+            'clamping' => $clamping->fresh(),
             'ticket_no' => $clamping->ticket_no,
-            'status' => $clamping->status, // Should now be 'paid'
+            'status' => $clamping->fresh()->status,
+            'qrCode' => $qrCode,
         ]);
     }
 
 
     public function cancel()
     {
+        // If user is not authenticated, redirect to login
+        if (!auth()->check()) {
+            return redirect()->route('login.form')->with('error', 'Session expired. Please log in again.');
+        }
+
         return view('payment.cancel');
     }
 

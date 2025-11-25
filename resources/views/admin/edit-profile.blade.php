@@ -1,275 +1,662 @@
-@extends('layouts.app')
-
-@section('title', 'Edit Admin Profile')
-
 @php
-    // Determine the profile route based on user role
+    $currentRoute = Route::currentRouteName();
     $userRole = $user->role->name ?? 'Admin';
-    $profileRoute = match($userRole) {
-        'Front Desk' => 'front-desk.profile',
-        'Enforcer' => 'enforcer.profile',
+
+    $layout = match (true) {
+        str_contains($currentRoute, 'enforcer') => 'dashboards.enforcer',
+        str_contains($currentRoute, 'front-desk') => 'layouts.front-desk',
+        default => 'layouts.app',
+    };
+
+    $profileRoute = match (true) {
+        str_contains($currentRoute, 'front-desk') => 'front-desk.profile',
+        str_contains($currentRoute, 'enforcer') => 'enforcer.profile',
         default => 'admin.profile',
     };
-    $profileUpdateRoute = match($userRole) {
-        'Front Desk' => 'front-desk.profile.update',
-        'Enforcer' => 'profile.update',
+
+    $profileUpdateRoute = match (true) {
+        str_contains($currentRoute, 'front-desk') => 'front-desk.profile.update',
+        str_contains($currentRoute, 'enforcer') => 'profile.update',
         default => 'admin.profile.update',
-    };
-    // Determine dashboard route
-    $dashboardRoute = match($userRole) {
-        'Front Desk' => 'front-desk.dashboard',
-        'Enforcer' => 'enforcer.dashboard',
-        default => 'dashboard',
     };
 @endphp
 
+@extends($layout)
+
+@section('title', 'Edit Profile')
+
 @section('content')
-<div class="edit-profile-container">
-    <a href="{{ route($profileRoute) }}" class="back-btn">← Back to Profile</a>
-    
-    <h2>Edit Profile</h2>
-    
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+<div class="edit-profile-wrapper">
+    <a href="{{ route($profileRoute) }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Profile
+    </a>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <form action="{{ route($profileUpdateRoute) }}" method="POST" enctype="multipart/form-data" class="edit-form">
-        @csrf
-        @method('PUT')
-        
-        <div class="form-section">
-            <h3>Profile Photo</h3>
-            <div class="photo-upload">
-                <img src="{{ $user->details && $user->details->photo ? asset('storage/' . $user->details->photo) : asset('images/default-avatar.png') }}" alt="Profile" class="preview-image">
-                <div class="upload-input">
-                    <input type="file" name="photo" accept="image/*" id="photoInput">
-                    <label for="photoInput">Choose Photo</label>
-                    <small>Recommended: 200x200px, JPG or PNG</small>
-                </div>
-            </div>
+    <!-- Main Edit Profile Container -->
+    <div class="edit-profile-container">
+        <!-- Sidebar Navigation -->
+        <div class="edit-sidebar">
+            <h3 class="sidebar-title">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Profile Sections
+            </h3>
+            <nav class="edit-nav">
+                <a href="#personal" class="edit-nav-item active" data-section="personal">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Personal Information</span>
+                </a>
+                <a href="#address" class="edit-nav-item" data-section="address">
+                    <i class="fa-solid fa-map-pin"></i>
+                    <span>Address</span>
+                </a>
+                <a href="#login" class="edit-nav-item" data-section="login">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Login & Password</span>
+                </a>
+            </nav>
         </div>
 
-        <div class="form-section">
-            <h3>Personal Information</h3>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" name="f_name" value="{{ $user->f_name }}" required class="form-control">
+        <!-- Forms Container -->
+        <div class="edit-forms">
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                    <div>
+                        <strong>Oops! There were some errors:</strong>
+                        <ul>
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" name="l_name" value="{{ $user->l_name }}" required class="form-control">
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <strong>Success!</strong> {{ session('success') }}
                 </div>
+            @endif
+
+            <!-- Personal Information Section -->
+            <div class="edit-section active" id="personal-section" data-section="personal">
+                <div class="section-header">
+                    <div>
+                        <h2>Personal Information</h2>
+                        <p>Update your name, email, and phone number</p>
+                    </div>
+                    <span class="role-chip">{{ $userRole }}</span>
+                </div>
+
+                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="form_type" value="personal">
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="f_name">First Name <span class="required">*</span></label>
+                            <input type="text" id="f_name" name="f_name" value="{{ old('f_name', $user->f_name) }}" required placeholder="Enter first name">
+                            @error('f_name') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="l_name">Last Name <span class="required">*</span></label>
+                            <input type="text" id="l_name" name="l_name" value="{{ old('l_name', $user->l_name) }}" required placeholder="Enter last name">
+                            @error('l_name') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required placeholder="Enter email address">
+                            @error('email') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="e.g., +1 (555) 123-4567">
+                            @error('phone') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                            <i class="fa-solid fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save"></i> Save Personal Information
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value="{{ $user->email }}" required class="form-control">
+            <!-- Address Section -->
+            <div class="edit-section" id="address-section" data-section="address">
+                <div class="section-header">
+                    <div>
+                        <h2>Address Information</h2>
+                        <p>Update your location and address details</p>
+                    </div>
+                    <span class="role-chip">{{ $userRole }}</span>
+                </div>
+
+                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="form_type" value="address">
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" name="country" value="{{ old('country', $user->details->country ?? '') }}" placeholder="Enter country">
+                            @error('country') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City/State</label>
+                            <input type="text" id="city" name="city" value="{{ old('city', $user->details->city ?? '') }}" placeholder="Enter city or state">
+                            @error('city') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="postal_code">Postal Code</label>
+                            <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code', $user->details->postal_code ?? '') }}" placeholder="Enter postal code">
+                            @error('postal_code') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Street Address</label>
+                            <input type="text" id="address" name="address" value="{{ old('address', $user->details->address ?? '') }}" placeholder="Enter street address">
+                            @error('address') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bio">Bio / About</label>
+                        <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself..." class="form-textarea">{{ old('bio', $user->details->bio ?? '') }}</textarea>
+                        @error('bio') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                            <i class="fa-solid fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save"></i> Save Address Information
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="tel" name="phone" value="{{ $user->phone ?? '' }}" class="form-control">
+            <!-- Login & Password Section -->
+            <div class="edit-section" id="login-section" data-section="login">
+                <div class="section-header">
+                    <div>
+                        <h2>Login & Password</h2>
+                        <p>Update your credentials and secure your account</p>
+                    </div>
+                    <span class="role-chip">{{ $userRole }}</span>
+                </div>
+
+                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="form_type" value="login">
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="username">Username <span class="required">*</span></label>
+                            <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}" required placeholder="Enter username">
+                            @error('username') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="login-email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="login-email" name="email" value="{{ old('email', $user->email) }}" required placeholder="Enter email address">
+                            @error('email') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-note">
+                        <i class="fa-solid fa-info-circle"></i>
+                        Leave password fields empty if you don't want to change your password.
+                    </div>
+
+                    <div class="form-grid two-columns">
+                        <div class="form-group">
+                            <label for="password">New Password</label>
+                            <input type="password" id="password" name="password" placeholder="Enter new password (minimum 8 characters)">
+                            @error('password') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="password_confirmation">Confirm Password</label>
+                            <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Repeat new password">
+                            @error('password_confirmation') <span class="error-text"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                            <i class="fa-solid fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save"></i> Save Login Information
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div class="form-section">
-            <h3>Additional Information</h3>
-            
-            <div class="form-group">
-                <label>Address</label>
-                <input type="text" name="address" value="{{ $user->details && $user->details->address ? $user->details->address : '' }}" class="form-control">
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Gender</label>
-                    <select name="gender" class="form-control">
-                        <option value="">Select Gender</option>
-                        <option value="Male" {{ $user->details && $user->details->gender === 'Male' ? 'selected' : '' }}>Male</option>
-                        <option value="Female" {{ $user->details && $user->details->gender === 'Female' ? 'selected' : '' }}>Female</option>
-                        <option value="Other" {{ $user->details && $user->details->gender === 'Other' ? 'selected' : '' }}>Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Birth Date</label>
-                    <input type="date" name="birthdate" value="{{ $user->details && $user->details->birthdate ? $user->details->birthdate->format('Y-m-d') : '' }}" class="form-control">
-                </div>
-            </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="{{ route($profileRoute) }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+    </div>
 </div>
 
 <style>
-    .edit-profile-container {
-        max-width: 700px;
-        margin: 30px auto;
+    .edit-profile-wrapper {
+        max-width: 1000px;
+        margin: 20px auto;
         padding: 20px;
     }
-    .back-btn {
-        display: inline-block;
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         margin-bottom: 20px;
-        color: #4e5de3;
-        text-decoration: none;
+        color: #2b58ff;
         font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
     }
-    .back-btn:hover {
-        color: #3c4bcc;
+
+    .back-link:hover {
+        gap: 12px;
+        color: #1e42cc;
     }
-    h2 {
+
+    .edit-profile-container {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .edit-sidebar {
+        background: #f9fafb;
+        padding: 24px;
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .sidebar-title {
+        margin: 0 0 20px 0;
+        font-size: 14px;
+        font-weight: 700;
         color: #333;
-        margin-bottom: 24px;
-    }
-    .form-section {
-        margin-bottom: 30px;
-        padding: 20px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-    .form-section h3 {
-        margin: 0 0 16px 0;
-        color: #333;
-        font-size: 16px;
-    }
-    .photo-upload {
         display: flex;
-        gap: 20px;
-        align-items: flex-start;
+        align-items: center;
+        gap: 8px;
     }
-    .preview-image {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid #ddd;
-    }
-    .upload-input {
+
+    .edit-nav {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
-    .upload-input input[type="file"] {
-        display: none;
-    }
-    .upload-input label {
-        display: inline-block;
-        padding: 10px 16px;
-        background: #4e5de3;
-        color: #fff;
-        border-radius: 6px;
+
+    .edit-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s;
         cursor: pointer;
-        font-weight: 600;
+        border-left: 3px solid transparent;
     }
-    .upload-input label:hover {
-        background: #3c4bcc;
-    }
-    .upload-input small {
-        color: #999;
-        font-size: 12px;
-    }
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-    .form-group {
-        margin-bottom: 16px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600;
+
+    .edit-nav-item:hover {
+        background: #f3f4f6;
         color: #333;
-        font-size: 14px;
     }
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 14px;
-        font-family: inherit;
+
+    .edit-nav-item.active {
+        background: #e3f2fd;
+        color: #2b58ff;
+        border-left-color: #2b58ff;
+        font-weight: 600;
     }
-    .form-control:focus {
-        outline: none;
-        border-color: #4e5de3;
-        box-shadow: 0 0 0 2px rgba(78, 93, 227, 0.1);
+
+    .edit-nav-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 15px;
     }
-    .form-actions {
+
+    .edit-forms {
+        padding: 32px;
+    }
+
+    .alert {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
         display: flex;
         gap: 12px;
-        margin-top: 24px;
     }
-    .btn {
-        padding: 12px 24px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        display: inline-block;
-        text-align: center;
-        flex: 1;
-        transition: all 0.3s;
-    }
-    .btn-primary {
-        background: #4e5de3;
-        color: #fff;
-    }
-    .btn-primary:hover {
-        background: #3c4bcc;
-    }
-    .btn-secondary {
-        background: #f0f0f0;
-        color: #333;
-    }
-    .btn-secondary:hover {
-        background: #e0e0e0;
-    }
-    .alert {
-        padding: 12px;
-        border-radius: 6px;
-        margin-bottom: 16px;
-    }
+
     .alert-danger {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #991b1b;
     }
-    .alert-danger ul {
+
+    .alert-danger i {
+        color: #dc2626;
+        margin-top: 2px;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        border: 1px solid #dcfce7;
+        color: #166534;
+    }
+
+    .alert-success i {
+        color: #22c55e;
+        margin-top: 2px;
+    }
+
+    .alert ul {
         margin: 0;
         padding-left: 20px;
     }
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+
+    .alert li {
+        margin: 4px 0;
     }
-    @media (max-width: 768px) {
-        .photo-upload {
-            flex-direction: column;
-            align-items: center;
+
+    .edit-section {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .edit-section.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
-        .form-row {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .section-header p {
+        margin: 4px 0 0 0;
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
+    .role-chip {
+        background: #fff5ec;
+        color: #ff7a19;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .form-grid.two-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .required {
+        color: #dc2626;
+    }
+
+    .form-group input,
+    .form-textarea {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        background: #fff;
+        transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #2b58ff;
+        box-shadow: 0 0 0 3px rgba(43, 88, 255, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .error-text {
+        font-size: 12px;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-note {
+        background: #f0fdf4;
+        border-left: 4px solid #22c55e;
+        padding: 12px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #166534;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2b58ff 0%, #1e42cc 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(43, 88, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(43, 88, 255, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .edit-profile-container {
             grid-template-columns: 1fr;
+        }
+
+        .edit-sidebar {
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px;
+        }
+
+        .edit-nav {
+            flex-direction: row;
+            gap: 4px;
+        }
+
+        .edit-nav-item {
+            flex: 1;
+            padding: 10px 8px;
+            font-size: 12px;
+            justify-content: center;
+        }
+
+        .edit-nav-item span {
+            display: none;
+        }
+
+        .edit-nav-item.active {
+            border-left: none;
+            border-bottom: 3px solid #2b58ff;
+        }
+
+        .edit-forms {
+            padding: 20px;
+        }
+
+        .form-grid.two-columns {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .sidebar-title {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .edit-profile-wrapper {
+            padding: 12px;
+            margin: 12px auto;
+        }
+
+        .edit-forms {
+            padding: 16px;
+        }
+
+        .back-link {
+            font-size: 13px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+        }
+
+        .form-group input,
+        .form-textarea {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            font-size: 13px;
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.edit-nav-item');
+        const sections = document.querySelectorAll('.edit-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = this.dataset.section;
+
+                // Remove active from all nav items and sections
+                navItems.forEach(nav => nav.classList.remove('active'));
+                sections.forEach(sec => sec.classList.remove('active'));
+
+                // Add active to clicked item and corresponding section
+                this.classList.add('active');
+                document.getElementById(section + '-section').classList.add('active');
+            });
+        });
+    });
+</script>
+
 @endsection

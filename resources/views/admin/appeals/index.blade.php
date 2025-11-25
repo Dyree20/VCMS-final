@@ -16,28 +16,28 @@
     <!-- Stats Cards -->
     <div class="appeals-stats-grid">
         <div class="appeals-stat-card">
-            <div class="stat-icon">📋</div>
+            <div class="stat-icon"><i class="fa-solid fa-list"></i></div>
             <div class="stat-content">
                 <div class="stat-value">{{ $stats['total'] }}</div>
                 <div class="stat-label">Total Appeals</div>
             </div>
         </div>
         <div class="appeals-stat-card pending">
-            <div class="stat-icon">⏳</div>
+            <div class="stat-icon"><i class="fa-solid fa-hourglass"></i></div>
             <div class="stat-content">
                 <div class="stat-value">{{ $stats['pending'] }}</div>
                 <div class="stat-label">Pending</div>
             </div>
         </div>
         <div class="appeals-stat-card review">
-            <div class="stat-icon">👁️</div>
+            <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
             <div class="stat-content">
                 <div class="stat-value">{{ $stats['under_review'] }}</div>
                 <div class="stat-label">Under Review</div>
             </div>
         </div>
         <div class="appeals-stat-card approved">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
             <div class="stat-content">
                 <div class="stat-value">{{ $stats['approved'] }}</div>
                 <div class="stat-label">Approved</div>

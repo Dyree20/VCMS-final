@@ -35,7 +35,7 @@
                 @if($errors->any())
                     <div id="errorOverlay" class="auth-overlay-v2">
                         <div class="auth-dialog-v2">
-                            <div style="color: red; font-size: 28px; margin-bottom: 15px;">❌</div>
+                            <div style="color: red; font-size: 28px; margin-bottom: 15px;"><i class="fa-solid fa-circle-xmark"></i></div>
                             <div id="errorMessage" class="message">{{ $errors->first() }}</div>
                             <a href="/login" style="margin-top: 15px; display: inline-block; padding: 10px 20px; background: #007bff; color: white; border-radius: 6px; text-decoration: none;">Back to Login</a>
                         </div>
@@ -51,7 +51,7 @@
         <div id="submitOverlay" class="auth-overlay-v2 hidden">
             <div class="auth-dialog-v2">
                 <div id="overlaySpinner" class="auth-spinner-v2"></div>
-                <div id="overlaySuccess" class="success-icon" style="display:none;">✅</div>
+                <div id="overlaySuccess" class="success-icon" style="display:none;"><i class="fa-solid fa-circle-check"></i></div>
                 <div id="overlayMessage" class="message">Resetting password...</div>
             </div>
         </div>

@@ -192,7 +192,7 @@
 
             <!-- Info Box -->
             <div class="info-box">
-                <strong>📧 How it works:</strong><br>
+                <strong><i class="fa-solid fa-envelope" style="margin-right: 6px;"></i>How it works:</strong><br>
                 We'll send a password reset link to your email. The link will expire in 1 hour for your security.
             </div>
 
@@ -206,7 +206,7 @@
             <!-- Error Message -->
             @if($errors->any())
                 <div class="error-message">
-                    <strong>❌ {{ $errors->first() }}</strong>
+                    <strong><i class="fa-solid fa-circle-xmark"></i> {{ $errors->first() }}</strong>
                 </div>
             @endif
 

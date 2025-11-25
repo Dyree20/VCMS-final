@@ -103,8 +103,8 @@
                                             display: inline-block;
                                             animation: {{ $enforcer->is_online ? 'pulse 2s infinite' : 'none' }};
                                         "></span>
-                                        <span style="font-weight: 600; color: {{ $enforcer->is_online ? '#28a745' : '#dc3545' }};">
-                                            {{ $enforcer->is_online ? '🟢 Online' : '🔴 Offline' }}
+                                        <span style="font-weight: 600; color: {{ $enforcer->is_online ? '#28a745' : '#dc3545' }}; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fa-solid fa-circle" style="font-size: 10px;"></i>{{ $enforcer->is_online ? 'Online' : 'Offline' }}
                                         </span>
                                         <span style="font-size: 12px; color: #999; margin-left: 8px;">
                                             {{ $enforcer->last_seen }}

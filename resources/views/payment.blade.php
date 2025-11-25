@@ -20,18 +20,17 @@
         </div>
     </div>
 
-    <div class="filters">
-        <input type="text" placeholder="Search by Plate No. / Ticket ID">
-        <select>
-            <option>All Status</option>
-            <option>Paid</option>
-            <option>Unpaid</option>
-            <option>Pending</option>
+    <form method="GET" action="{{ route('payments') }}" class="filters">
+        <input type="text" name="search" placeholder="Search by Plate No. / Ticket ID" value="{{ request('search') }}">
+        <select name="status">
+            <option value="All Status" {{ request('status') == 'All Status' || !request('status') ? 'selected' : '' }}>All Status</option>
+            <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
         </select>
-        <input type="date">
-        <input type="date">
-        <button>Filter</button>
-    </div>
+        <input type="date" name="start_date" value="{{ request('start_date') }}" placeholder="From Date">
+        <input type="date" name="end_date" value="{{ request('end_date') }}" placeholder="To Date">
+        <button type="submit">Filter</button>
+    </form>
     
     <div class="payment_table_wrapper" style="margin-top: 30px; min-height: 500px;">
         <table class="payments-table">
@@ -49,38 +48,65 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($payments as $payment)
+                @forelse($clampings as $clamping)
+                @php
+                    $payment = $clamping->payees->first(); // Get the first payment record if exists
+                    $clampingStatus = strtolower($clamping->status ?? 'unknown');
+                    $statusClass = match($clampingStatus) {
+                        'paid' => 'paid',
+                        'pending' => 'pending',
+                        default => 'unknown'
+                    };
+                @endphp
                 <tr>
-                    <td>{{ $payment->ticket_no }}</td>
-                    <td>{{ $payment->clamping->plate_no ?? '—' }}</td>
+                    <td>{{ $clamping->ticket_no }}</td>
+                    <td>{{ $clamping->plate_no ?? '—' }}</td>
                     <td>
                         <span style="font-weight: 600; color: #007bff;">
-                            {{ $payment->clamping && $payment->clamping->user ? $payment->clamping->user->f_name . ' ' . $payment->clamping->user->l_name : 'N/A' }}
+                            {{ $clamping->user ? $clamping->user->f_name . ' ' . $clamping->user->l_name : 'N/A' }}
                         </span>
                         <div style="font-size: 12px; color: #999;">
-                            {{ $payment->clamping && $payment->clamping->user ? $payment->clamping->user->enforcer_id : '—' }}
+                            {{ $clamping->user && $clamping->user->enforcer_id ? $clamping->user->enforcer_id : '—' }}
                         </div>
                     </td>
-                    <td>{{ $payment->clamping->reason ?? '—' }}</td>
-                    <td>{{ ucfirst($payment->payment_method) }}</td>
-                    <td>₱{{ number_format($payment->amount_paid, 2) }}</td>
+                    <td>{{ $clamping->reason ?? '—' }}</td>
+                    <td>{{ $payment ? ucfirst($payment->payment_method ?? 'N/A') : '—' }}</td>
+                    <td>₱{{ number_format($clamping->fine_amount ?? 0, 2) }}</td>
                     <td>
-                        <span class="status paid">Paid</span>
+                        <span class="status {{ $statusClass }}">{{ ucfirst($clampingStatus) }}</span>
                     </td>
-
-                    <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('m/d/Y') }}</td>
                     <td>
-                        <a href="{{ route('clampings.print', $payment->clamping->id) }}" class="btn-view-receipt" target="_blank">View Receipt</a>
+                        @if($payment && $payment->payment_date)
+                            {{ \Carbon\Carbon::parse($payment->payment_date)->format('m/d/Y') }}
+                        @elseif($payment && $payment->created_at)
+                            {{ \Carbon\Carbon::parse($payment->created_at)->format('m/d/Y') }}
+                        @else
+                            —
+                        @endif
+                    </td>
+                    <td>
+                        @if($payment)
+                            <a href="{{ route('clampings.print', $clamping->id) }}" class="btn-view-receipt" target="_blank">View Receipt</a>
+                        @else
+                            <a href="{{ route('clampings.show', $clamping->id) }}" class="btn-view-receipt" style="background: #6c757d;">View Details</a>
+                        @endif
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" style="text-align:center; padding: 40px;">No payments found</td>
+                    <td colspan="9" style="text-align:center; padding: 40px;">No clampings found</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    @if($clampings->hasPages())
+    <div style="display: flex; justify-content: center; margin-top: 30px;">
+        {{ $clampings->links() }}
+    </div>
+    @endif
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 

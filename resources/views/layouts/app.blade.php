@@ -180,12 +180,6 @@
                             <span class="link_name">Enforcer Tracking</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('gps.dashboard') }}" class="nav-link {{ strpos($currentRoute, 'gps.') === 0 ? 'active' : '' }}">
-                            <i class='bx bx-navigation'></i>
-                            <span class="link_name">GPS Tracking</span>
-                        </a>
-                    </li>
                 @elseif($userRole === 'Front Desk')
                     <li>
                         <a href="{{ route('dashboard') }}" class="nav-link {{ $currentRoute === 'dashboard' ? 'active' : '' }}">

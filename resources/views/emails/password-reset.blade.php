@@ -84,7 +84,7 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>🔐 Password Reset Request</h1>
+            <h1><i class="fa-solid fa-lock" style="margin-right: 8px; color: #007bff;"></i>Password Reset Request</h1>
         </div>
         <div class="content">
             <h2>Hello {{ $userName }},</h2>

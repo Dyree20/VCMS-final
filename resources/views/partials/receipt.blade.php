@@ -8,7 +8,7 @@
 </head>
 <body>
     <button class="back-btn" id="backBtn">← Back</button>
-    <button class="print-btn" onclick="window.print()">🖨 Print Receipt</button>
+    <button class="print-btn" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Print Receipt</button>
     
     <!-- Main Receipt Wrapper (Portal-style) -->
     <div class="receipt-wrapper">

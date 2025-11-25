@@ -13,7 +13,7 @@
     </style>
 </head>
 <body>
-    <h2>❌ Ticket Not Found</h2>
+    <h2><i class="fa-solid fa-circle-xmark"></i> Ticket Not Found</h2>
     <p>This ticket ID does not exist or may have been removed.</p>
 </body>
 </html>

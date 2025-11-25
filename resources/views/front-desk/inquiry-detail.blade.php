@@ -97,7 +97,7 @@
         </div>
         @else
         <div style="margin-bottom: 30px; background: #fff3cd; padding: 20px; border-radius: 6px; border-left: 4px solid #ffc107;">
-            <h3 style="font-size: 16px; font-weight: 600; color: #856404; margin-top: 0; margin-bottom: 10px;">⚠️ No Payment Recorded</h3>
+            <h3 style="font-size: 16px; font-weight: 600; color: #856404; margin-top: 0; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> No Payment Recorded</h3>
             <p style="color: #856404; margin: 0;">This violation has not been marked as paid yet.</p>
         </div>
         @endif
@@ -112,19 +112,23 @@
 
         <!-- Action Buttons -->
         <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-            @if($clamping->status === 'paid')
-                <button disabled style="padding: 12px 24px; background: #ccc; color: #999; border: none; border-radius: 6px; font-weight: 600; cursor: not-allowed;">
-                    ✓ Already Paid
-                </button>
-            @elseif($clamping->status === 'cancelled')
+            @if(strtolower($clamping->status) === 'paid')
+                <!-- Show Release button when paid -->
+                <form method="POST" action="{{ route('clampings.release', $clamping->id) }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-success" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        <i class="fa-solid fa-lock-open" style="margin-right: 6px;"></i>Release Vehicle
+                    </button>
+                </form>
+            @elseif(strtolower($clamping->status) === 'cancelled')
                 <button disabled style="padding: 12px 24px; background: #ccc; color: #999; border: none; border-radius: 6px; font-weight: 600; cursor: not-allowed;" title="Cannot mark cancelled violations as paid">
-                    ✗ Cancelled (Cannot Pay)
+                    <i class="fa-solid fa-check-circle" style="margin-right: 6px; color: #dc3545;"></i>Cancelled (Cannot Pay)
                 </button>
             @else
                 <form method="POST" action="{{ route('front-desk.inquiry.mark-paid', $clamping->id) }}" style="display: inline;">
                     @csrf
                     <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        ✓ Mark as Paid
+                        <i class="fa-solid fa-check"></i> Mark as Paid
                     </button>
                 </form>
             @endif

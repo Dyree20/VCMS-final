@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use App\Models\Clamping;
 use App\Models\Archive;
 use App\Models\ActivityLog;
+use App\Models\ParkingZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,8 @@ class ClampingController extends Controller
 {   
     public function create()
     {
-        return view('dashboards.enforcer-add-clamping');
+        $parkingZones = ParkingZone::where('status', 'active')->get();
+        return view('dashboards.enforcer-add-clamping', compact('parkingZones'));
     }
     public function index(Request $request)
     {
@@ -36,7 +38,16 @@ class ClampingController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $clampings = $query->orderBy('created_at', 'desc')->get();
+        // Apply date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+
+        $clampings = $query->with(['user', 'zone'])->orderBy('created_at', 'desc')->paginate(20);
         return view('clamping', compact('clampings')); 
     }
 
@@ -295,68 +306,118 @@ class ClampingController extends Controller
         return redirect()->route('clampings')->with('success', 'Clamping cancelled successfully');
     }
 
+    /**
+     * Helper method to release vehicle and create archive after payment
+     * This is called when the release button is clicked (after payment is completed)
+     * 
+     * @param Clamping $clamping The clamping record to release
+     * @param int|null $archivedByUserId The user ID who processed the release (defaults to current user)
+     * @return bool True if successful, false otherwise
+     */
+    public static function releaseAndArchive(Clamping $clamping, $archivedByUserId = null)
+    {
+        try {
+            // Only release if status is paid (case-insensitive check)
+            $status = strtolower($clamping->status);
+            if ($status !== 'paid') {
+                Log::warning('Cannot release clamping that is not paid', [
+                    'clamping_id' => $clamping->id,
+                    'ticket_no' => $clamping->ticket_no,
+                    'status' => $clamping->status
+                ]);
+                return false;
+            }
+
+            // Update clamping status to released
+            $clamping->status = 'released';
+            $clamping->save();
+
+            // Log activity
+            $user = Auth::user();
+            try {
+                if (class_exists(ActivityLog::class)) {
+                    ActivityLog::create([
+                        'user_id' => $user ? $user->id : null,
+                        'username' => $user ? ($user->name ?? $user->email ?? 'user') : 'guest',
+                        'action' => 'released',
+                        'clamping_id' => $clamping->id,
+                    ]);
+                }
+            } catch (\Exception $ex) {
+                Log::info('ActivityLog insert failed:', ['error' => $ex->getMessage()]);
+            }
+
+            // Archive the released clamping - linked to the attending enforcer (user_id from clamping)
+            try {
+                // Check if already archived
+                $existingArchive = Archive::where('clamping_id', $clamping->id)->first();
+                if (!$existingArchive) {
+                    $archiveData = [
+                        'clamping_id' => $clamping->id,
+                        'user_id' => $clamping->user_id, // This is the attending enforcer who issued the clamp
+                        'ticket_no' => $clamping->ticket_no,
+                        'plate_no' => $clamping->plate_no,
+                        'vehicle_type' => $clamping->vehicle_type ?? null,
+                        'reason' => $clamping->reason,
+                        'location' => $clamping->location,
+                        'fine_amount' => $clamping->fine_amount,
+                        'archived_status' => 'released',
+                        'archived_date' => now(),
+                        'archived_by' => $archivedByUserId ?? Auth::id(), // User who processed the payment/release
+                    ];
+                    
+                    Log::info('Attempting to create archive after payment:', $archiveData);
+                    $archive = Archive::create($archiveData);
+                    Log::info('Archive created successfully after payment:', [
+                        'archive_id' => $archive->id,
+                        'enforcer_user_id' => $clamping->user_id
+                    ]);
+                } else {
+                    Log::info('Archive already exists for clamping:', [
+                        'clamping_id' => $clamping->id,
+                        'archive_id' => $existingArchive->id
+                    ]);
+                }
+            } catch (\Exception $ex) {
+                Log::error('Archive creation failed after payment:', [
+                    'error' => $ex->getMessage(), 
+                    'clamping_id' => $clamping->id,
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine(),
+                    'trace' => $ex->getTraceAsString()
+                ]);
+                return false;
+            }
+
+            return true;
+        } catch (\Exception $ex) {
+            Log::error('Release and archive failed:', [
+                'error' => $ex->getMessage(),
+                'clamping_id' => $clamping->id,
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine()
+            ]);
+            return false;
+        }
+    }
+
     public function release(Request $request, $id)
     {
         $clamping = Clamping::findOrFail($id);
         
         // Only allow releasing if status is paid
-        if ($clamping->status !== 'paid') {
+        if (strtolower($clamping->status) !== 'paid') {
             return redirect()->route('clampings.show', $clamping->id)->with('error', 'Can only release paid violations.');
         }
         
-        $clamping->status = 'released';
-        $clamping->save();
-
-        $user = Auth::user();
-        try {
-            if (class_exists(ActivityLog::class)) {
-                ActivityLog::create([
-                    'user_id' => $user ? $user->id : null,
-                    'username' => $user ? ($user->name ?? $user->email ?? 'user') : 'guest',
-                    'action' => 'released',
-                    'clamping_id' => $clamping->id,
-                ]);
-            }
-        } catch (\Exception $ex) {
-            Log::info('ActivityLog insert failed:', ['error' => $ex->getMessage()]);
+        // Use the helper method
+        $success = self::releaseAndArchive($clamping);
+        
+        if ($success) {
+            return redirect()->route('clampings')->with('success', 'Clamping #' . $clamping->ticket_no . ' has been released and moved to archives.');
+        } else {
+            return redirect()->route('clampings.show', $clamping->id)->with('error', 'Failed to release and archive clamping.');
         }
-
-        // Archive the released clamping
-        try {
-            // Check if already archived
-            $existingArchive = Archive::where('clamping_id', $clamping->id)->first();
-            if (!$existingArchive) {
-                $archiveData = [
-                    'clamping_id' => $clamping->id,
-                    'user_id' => $clamping->user_id,
-                    'ticket_no' => $clamping->ticket_no,
-                    'plate_no' => $clamping->plate_no,
-                    'vehicle_type' => $clamping->vehicle_type ?? null,
-                    'reason' => $clamping->reason,
-                    'location' => $clamping->location,
-                    'fine_amount' => $clamping->fine_amount,
-                    'archived_status' => 'released',
-                    'archived_date' => now(),
-                    'archived_by' => Auth::id(),
-                ];
-                
-                Log::info('Attempting to create archive:', $archiveData);
-                $archive = Archive::create($archiveData);
-                Log::info('Archive created successfully:', ['archive_id' => $archive->id]);
-            } else {
-                Log::info('Archive already exists for clamping:', ['clamping_id' => $clamping->id, 'archive_id' => $existingArchive->id]);
-            }
-        } catch (\Exception $ex) {
-            Log::error('Archive creation failed in release:', [
-                'error' => $ex->getMessage(), 
-                'clamping_id' => $clamping->id,
-                'file' => $ex->getFile(),
-                'line' => $ex->getLine(),
-                'trace' => $ex->getTraceAsString()
-            ]);
-        }
-
-        return redirect()->route('clampings')->with('success', 'Clamping #' . $clamping->ticket_no . ' has been released and moved to archives.');
     }
 
     public function destroy($id)

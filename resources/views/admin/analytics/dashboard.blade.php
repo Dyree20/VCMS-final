@@ -4,48 +4,73 @@
 
 @section('content')
 <div class="analytics-container">
-    <!-- Header -->
+    <!-- Header with Period Selector -->
     <div class="analytics-header">
-        <h1 class="analytics-title">
-            <i class="fa-solid fa-chart-line"></i>
-            Analytics Dashboard
-        </h1>
-        <p class="analytics-subtitle">System Performance & Statistics</p>
+        <div class="analytics-header-title">
+            <h1 class="analytics-title">
+                <i class="fa-solid fa-chart-line"></i>
+                Analytics Dashboard
+            </h1>
+            <p class="analytics-subtitle">System Performance & Statistics</p>
+        </div>
+        <div class="analytics-period-selector">
+            <button class="period-btn active" data-period="today">Today</button>
+            <button class="period-btn" data-period="weekly">Weekly</button>
+            <button class="period-btn" data-period="monthly">Monthly</button>
+        </div>
     </div>
 
     <!-- Key Metrics Grid -->
     <div class="analytics-metrics-grid">
-        <!-- Clampings Today -->
+        <!-- Clampings Card -->
         <div class="analytics-metric-card">
             <div class="analytics-metric-header">
-                <h3>Clampings Today</h3>
+                <h3>Clampings</h3>
                 <i class="fa-solid fa-car-side"></i>
             </div>
-            <div class="analytics-metric-value">{{ $clampingsToday }}</div>
-            <div class="analytics-metric-subtitle">Month: {{ $clampingsMonth }} | Year: {{ $clampingsYear }}</div>
+            <div class="analytics-metric-value today-value">{{ $clampingsToday }}</div>
+            <div class="analytics-metric-value weekly-value" style="display: none;">{{ $clampingsWeek }}</div>
+            <div class="analytics-metric-value monthly-value" style="display: none;">{{ $clampingsMonth }}</div>
+            <div class="analytics-metric-subtitle">
+                <span class="today-subtitle">Month: {{ $clampingsMonth }} | Year: {{ $clampingsYear }}</span>
+                <span class="weekly-subtitle" style="display: none;">This Week</span>
+                <span class="monthly-subtitle" style="display: none;">This Month</span>
+            </div>
         </div>
 
-        <!-- Revenue Today -->
+        <!-- Revenue Card -->
         <div class="analytics-metric-card">
             <div class="analytics-metric-header">
-                <h3>Revenue Today</h3>
+                <h3>Revenue</h3>
                 <i class="fa-solid fa-peso-sign"></i>
             </div>
-            <div class="analytics-metric-value">₱{{ number_format($revenueToday, 2) }}</div>
-            <div class="analytics-metric-subtitle">Month: ₱{{ number_format($revenueMonth, 2) }}</div>
+            <div class="analytics-metric-value today-value">₱{{ number_format($revenueToday, 2) }}</div>
+            <div class="analytics-metric-value weekly-value" style="display: none;">₱{{ number_format($revenueWeek, 2) }}</div>
+            <div class="analytics-metric-value monthly-value" style="display: none;">₱{{ number_format($revenueMonth, 2) }}</div>
+            <div class="analytics-metric-subtitle">
+                <span class="today-subtitle">Month: ₱{{ number_format($revenueMonth, 2) }}</span>
+                <span class="weekly-subtitle" style="display: none;">Year: ₱{{ number_format($revenueYear, 2) }}</span>
+                <span class="monthly-subtitle" style="display: none;">Year: ₱{{ number_format($revenueYear, 2) }}</span>
+            </div>
         </div>
 
-        <!-- Appeals Pending -->
+        <!-- Released Today Card -->
         <div class="analytics-metric-card">
             <div class="analytics-metric-header">
-                <h3>Appeals Pending</h3>
-                <i class="fa-solid fa-clipboard-list"></i>
+                <h3>Released</h3>
+                <i class="fa-solid fa-check-circle"></i>
             </div>
-            <div class="analytics-metric-value">{{ $appealStats['pending'] }}</div>
-            <div class="analytics-metric-subtitle">Total: {{ $appealStats['total'] }}</div>
+            <div class="analytics-metric-value today-value">{{ $releasedToday }}</div>
+            <div class="analytics-metric-value weekly-value" style="display: none;">{{ $releasedWeek }}</div>
+            <div class="analytics-metric-value monthly-value" style="display: none;">{{ $releasedMonth }}</div>
+            <div class="analytics-metric-subtitle">
+                <span class="today-subtitle">This Month: {{ $releasedMonth }}</span>
+                <span class="weekly-subtitle" style="display: none;">This Week</span>
+                <span class="monthly-subtitle" style="display: none;">This Month</span>
+            </div>
         </div>
 
-        <!-- Yearly Revenue -->
+        <!-- Yearly Revenue Card -->
         <div class="analytics-metric-card">
             <div class="analytics-metric-header">
                 <h3>Yearly Revenue</h3>
@@ -66,9 +91,9 @@
             </div>
         </div>
 
-        <!-- Monthly Trend -->
+        <!-- Trend Chart -->
         <div class="analytics-chart-card">
-            <h3 class="analytics-chart-title">Monthly Trend</h3>
+            <h3 class="analytics-chart-title" id="trendTitle">Daily Trend (This Month)</h3>
             <div class="analytics-chart-container">
                 <canvas id="trendChart"></canvas>
             </div>
@@ -140,10 +165,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    let trendChart = null;
+
+    // Data
+    const statusData = {!! json_encode($statusBreakdown) !!};
+    const dailyData = {!! json_encode($dailyData) !!};
+    const weeklyData = {!! json_encode($weeklyData) !!};
+    const monthlyData = {!! json_encode($monthlyData) !!};
+
     // Status Breakdown Chart
     const statusCtx = document.getElementById('statusChart').getContext('2d');
-    const statusData = {!! json_encode($statusBreakdown) !!};
-    
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
@@ -171,65 +202,116 @@
         }
     });
 
-    // Monthly Trend Chart
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
-    const monthlyData = {!! json_encode($monthlyData) !!};
-    
-    new Chart(trendCtx, {
-        type: 'line',
-        data: {
-            labels: monthlyData.map(d => d.date),
-            datasets: [{
-                label: 'Clampings',
-                data: monthlyData.map(d => d.count),
-                borderColor: '#2b58ff',
-                backgroundColor: 'rgba(43, 88, 255, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#2b58ff',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-            }, {
-                label: 'Revenue (₱)',
-                data: monthlyData.map(d => d.revenue / 1000),
-                borderColor: '#16a34a',
-                backgroundColor: 'rgba(22, 163, 74, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#16a34a',
-                yAxisID: 'y1',
-            }]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
+    // Trend Chart - Initial (Daily)
+    function initTrendChart(data, title, yAxisLabel) {
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        
+        if (trendChart) {
+            trendChart.destroy();
+        }
+
+        // Prepare chart labels
+        let labels = [];
+        if (title.includes('Daily')) {
+            labels = data.map(d => d.date);
+        } else if (title.includes('Weekly')) {
+            labels = data.map((d, i) => `Week ${d.week}`);
+        } else if (title.includes('Monthly')) {
+            labels = data.map(d => d.month);
+        }
+
+        trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Clampings',
+                    data: data.map(d => d.count),
+                    borderColor: '#2b58ff',
+                    backgroundColor: 'rgba(43, 88, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#2b58ff',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }, {
+                    label: 'Revenue (₱)',
+                    data: data.map(d => d.revenue / 1000),
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#16a34a',
+                    yAxisID: 'y1',
+                }]
             },
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Clampings Count'
-                    }
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
                 },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
+                scales: {
+                    y: {
+                        type: 'linear',
                         display: true,
-                        text: 'Revenue (₱1000s)'
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Clampings Count'
+                        }
                     },
-                    grid: {
-                        drawOnChartArea: false,
-                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Revenue (₱1000s)'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
                 }
             }
-        }
+        });
+
+        // Update title
+        document.getElementById('trendTitle').textContent = title;
+    }
+
+    // Initialize with daily data
+    initTrendChart(dailyData, 'Daily Trend (This Month)', 'Clampings Count');
+
+    // Period selector buttons
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+
+            const period = this.dataset.period;
+
+            // Update metric card values
+            document.querySelectorAll('.today-value, .today-subtitle').forEach(el => el.style.display = period === 'today' ? 'block' : 'none');
+            document.querySelectorAll('.weekly-value, .weekly-subtitle').forEach(el => el.style.display = period === 'weekly' ? 'block' : 'none');
+            document.querySelectorAll('.monthly-value, .monthly-subtitle').forEach(el => el.style.display = period === 'monthly' ? 'block' : 'none');
+
+            // Update trend chart
+            switch(period) {
+                case 'today':
+                    initTrendChart(dailyData, 'Daily Trend (This Month)', 'Clampings Count');
+                    break;
+                case 'weekly':
+                    initTrendChart(weeklyData, 'Weekly Trend (This Year)', 'Clampings Count');
+                    break;
+                case 'monthly':
+                    initTrendChart(monthlyData, 'Monthly Trend (Last 12 Months)', 'Clampings Count');
+                    break;
+            }
+        });
     });
 </script>
 

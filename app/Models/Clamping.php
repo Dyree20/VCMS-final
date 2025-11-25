@@ -26,4 +26,14 @@ class Clamping extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function zone()
+    {
+        return $this->belongsTo(ParkingZone::class, 'parking_zone_id');
+    }
+
+    public function payees()
+    {
+        return $this->hasMany(Payee::class);
+    }
 }

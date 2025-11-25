@@ -135,13 +135,15 @@ class FrontDeskController extends Controller
                 'amount_paid' => $clamping->fine_amount,
                 'payment_method' => 'walk-in',
                 'status' => 'completed',
+                'payment_date' => now(),
             ]);
         }
 
+        // Update clamping status to paid - release button will appear for manual release
         $clamping->status = 'paid';
         $clamping->save();
 
-        return back()->with('success', 'Violation marked as paid successfully');
+        return back()->with('success', 'Violation marked as paid successfully. Please release the vehicle when ready.');
     }
 
     public function getStatistics()
@@ -204,10 +206,10 @@ class FrontDeskController extends Controller
             'payment_date' => now(),
         ]);
 
-        // Update clamping status
+        // Update clamping status to paid - release button will appear for manual release
         $clamping->update(['status' => 'paid']);
 
-        return back()->with('success', 'Payment recorded successfully! Ticket #' . $clamping->ticket_no . ' has been marked as paid.');
+        return back()->with('success', 'Payment recorded successfully! Ticket #' . $clamping->ticket_no . ' has been marked as paid. Please release the vehicle when ready.');
     }
 
     /**

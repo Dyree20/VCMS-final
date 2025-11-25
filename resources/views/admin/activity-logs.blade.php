@@ -294,7 +294,7 @@
 <div class="activity-logs-container">
     <!-- Header -->
     <div class="logs-header">
-        <h2>📋 Activity Logs</h2>
+        <h2><i class="fa-solid fa-list"></i> Activity Logs</h2>
         <p style="color: #999; margin: 0;">Monitor all user actions and system activities</p>
     </div>
 

@@ -18,7 +18,7 @@ class SearchController extends Controller
     public function search(Request $request)
     {
         $filters = $request->validate([
-            'plate' => 'nullable|string',
+            'plate_no' => 'nullable|string',
             'enforcer_id' => 'nullable|integer',
             'status' => 'nullable|string',
             'date_from' => 'nullable|date',
@@ -30,8 +30,8 @@ class SearchController extends Controller
 
         $query = Clamping::query();
 
-        if ($filters['plate'] ?? null) {
-            $query->where('plate', 'like', '%' . $filters['plate'] . '%');
+        if ($filters['plate_no'] ?? null) {
+            $query->where('plate_no', 'like', '%' . $filters['plate_no'] . '%');
         }
 
         if ($filters['enforcer_id'] ?? null) {
@@ -55,11 +55,11 @@ class SearchController extends Controller
         }
 
         if ($filters['min_fine'] ?? null) {
-            $query->where('fine', '>=', $filters['min_fine']);
+            $query->where('fine_amount', '>=', $filters['min_fine']);
         }
 
         if ($filters['max_fine'] ?? null) {
-            $query->where('fine', '<=', $filters['max_fine']);
+            $query->where('fine_amount', '<=', $filters['max_fine']);
         }
 
         $results = $query->with(['user', 'zone'])->paginate(20);

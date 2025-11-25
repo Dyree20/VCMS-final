@@ -418,6 +418,12 @@ tbody tr[style*="display: none"] {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.user-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-color: #e8eaf6;
 }
 
 .user-header {
@@ -426,6 +432,18 @@ tbody tr[style*="display: none"] {
   text-align: center;
   color: #fff;
   position: relative;
+  overflow: hidden;
+}
+
+.user-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
 }
 
 .user-header img {
@@ -534,6 +552,26 @@ tbody tr[style*="display: none"] {
   letter-spacing: 0.8px;
   box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
   min-width: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-actions .auth-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.user-actions .auth-button:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .user-actions .auth-button:hover {
@@ -702,6 +740,96 @@ tbody tr[style*="display: none"] {
   .user-detail-page .btn {
     padding: 10px 12px;
     font-size: 12px;
+  }
+}
+
+/* Ultra-mobile styling for screens 360px and below */
+@media (max-width: 360px) {
+  .user-detail-page {
+    padding: 8px;
+    margin: 8px auto;
+    max-width: 100%;
+  }
+
+  .user-card {
+    border-radius: 12px;
+  }
+
+  .user-header {
+    padding: 20px 12px;
+  }
+
+  .user-header img {
+    width: 80px;
+    height: 80px;
+    border-width: 3px;
+    margin-bottom: 12px;
+  }
+
+  .user-header h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    letter-spacing: 0;
+  }
+
+  .user-header p {
+    font-size: 11px;
+    margin: 4px 0;
+    line-height: 1.6;
+  }
+
+  .user-header p strong {
+    min-width: auto;
+    text-align: center;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .user-meta {
+    padding: 16px 12px;
+  }
+
+  .user-meta h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .user-meta h3::before {
+    font-size: 18px;
+  }
+
+  .user-meta p {
+    font-size: 12px;
+    margin: 8px 0;
+    padding: 8px 0;
+    flex-direction: column;
+  }
+
+  .user-meta p strong {
+    min-width: auto;
+    margin-bottom: 3px;
+    color: #2b58ff;
+  }
+
+  .user-actions {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .user-actions .auth-button {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+
+  .user-detail-page .btn {
+    width: 100%;
+    padding: 9px 10px;
+    font-size: 11px;
+    margin-bottom: 15px;
+    gap: 5px;
   }
 }
 

@@ -14,11 +14,48 @@ class ArchiveController extends Controller
      */
     public function adminIndex()
     {
+        // Get all archives grouped by enforcer
         $archives = Archive::with('user', 'clamping')
             ->orderBy('archived_date', 'desc')
-            ->paginate(20);
+            ->get();
 
-        return view('admin.archives', compact('archives'));
+        // Group archives by user/enforcer
+        $enforcers = [];
+        $archivesByEnforcer = [];
+
+        foreach ($archives as $archive) {
+            $userId = $archive->user_id;
+            
+            if (!isset($archivesByEnforcer[$userId])) {
+                $archivesByEnforcer[$userId] = [];
+            }
+            
+            $archivesByEnforcer[$userId][] = [
+                'ticket_no' => $archive->ticket_no,
+                'plate_no' => $archive->plate_no,
+                'fine_amount' => $archive->fine_amount,
+                'archived_status' => $archive->archived_status,
+                'archived_date' => $archive->archived_date,
+            ];
+        }
+
+        // Build enforcer list with counts
+        foreach ($archivesByEnforcer as $userId => $records) {
+            $user = $archives->first(fn($a) => $a->user_id === $userId)?->user;
+            if ($user) {
+                $enforcers[] = [
+                    'id' => $userId,
+                    'enforcer_id' => $user->enforcer_id ?? 'N/A',
+                    'name' => $user->f_name . ' ' . $user->l_name,
+                    'count' => count($records),
+                ];
+            }
+        }
+
+        // Sort enforcers by name
+        usort($enforcers, fn($a, $b) => strcmp($a['name'], $b['name']));
+
+        return view('admin.archives', compact('enforcers', 'archivesByEnforcer'));
     }
 
     /**

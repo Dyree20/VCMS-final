@@ -11,7 +11,9 @@ class ProfileController extends Controller
     public function show()
     {
         $user = auth()->user();
-        $user->load(['role', 'status', 'details']);
+        $user->load(['role', 'status', 'details', 'devices']); // eager load devices for security tab
+        
+        // Return role-specific profile view - all roles use admin profile for consistent design
         return view('admin.profile', compact('user'));
     }
 
@@ -26,45 +28,63 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
         
-        $validated = $request->validate([
-            'f_name' => 'required|string|max:255',
-            'l_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'address' => 'nullable|string',
-            'gender' => 'nullable|string|in:Male,Female,Other',
-            'birthdate' => 'nullable|date',
-        ]);
+        $formType = $request->input('form_type', 'profile');
 
-        // Update user
-        $user->update([
-            'f_name' => $validated['f_name'],
-            'l_name' => $validated['l_name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? $user->phone,
-        ]);
+        if ($formType === 'login') {
+            $validated = $request->validate([
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+                'password' => 'nullable|string|min:8|confirmed',
+            ]);
 
-        // Handle file upload
-        if ($request->hasFile('photo')) {
-            if ($user->details && $user->details->photo) {
-                Storage::delete('public/' . $user->details->photo);
+            $updateData = [
+                'email' => $validated['email'],
+                'username' => $validated['username'],
+            ];
+
+            if (!empty($validated['password'])) {
+                $updateData['password'] = $validated['password'];
             }
-            $path = $request->file('photo')->store('profile-photos', 'public');
-        } else {
-            $path = $user->details ? $user->details->photo : null;
-        }
 
-        // Update or create user details
-        UserDetail::updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'photo' => $path,
-                'address' => $validated['address'] ?? null,
-                'gender' => $validated['gender'] ?? null,
-                'birthdate' => $validated['birthdate'] ?? null,
-            ]
-        );
+            $user->update($updateData);
+        } else {
+            $validated = $request->validate([
+                'f_name' => 'required|string|max:255',
+                'l_name' => 'required|string|max:255',
+                'phone' => 'nullable|string',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'address' => 'nullable|string',
+                'nationality' => 'nullable|string|max:255',
+                'gender' => 'nullable|string|in:Male,Female,Other',
+                'birthdate' => 'nullable|date',
+            ]);
+
+            $user->update([
+                'f_name' => $validated['f_name'],
+                'l_name' => $validated['l_name'],
+                'phone' => $validated['phone'] ?? $user->phone,
+            ]);
+
+            if ($request->hasFile('photo')) {
+                if ($user->details && $user->details->photo) {
+                    Storage::delete('public/' . $user->details->photo);
+                }
+                $path = $request->file('photo')->store('profile-photos', 'public');
+            } else {
+                $path = $user->details ? $user->details->photo : null;
+            }
+
+            UserDetail::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'photo' => $path,
+                    'address' => $validated['address'] ?? null,
+                    'nationality' => $validated['nationality'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'birth_date' => $validated['birthdate'] ?? null,
+                ]
+            );
+        }
 
         // Determine redirect route based on user role
         $redirectRoute = match($user->role->name) {

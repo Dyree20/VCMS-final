@@ -20,17 +20,33 @@ class AnalyticsController extends Controller
     private function getAnalyticsData()
     {
         $today = Carbon::now()->startOfDay();
+        $thisWeek = Carbon::now()->startOfWeek();
         $thisMonth = Carbon::now()->startOfMonth();
         $thisYear = Carbon::now()->startOfYear();
 
-        // Clamping Statistics
+        // Today Statistics
         $clampingsToday = Clamping::whereDate('created_at', $today)->count();
-        $clampingsMonth = Clamping::where('created_at', '>=', $thisMonth)->count();
-        $clampingsYear = Clamping::where('created_at', '>=', $thisYear)->count();
-
-        // Revenue Statistics
         $revenueToday = Payee::whereDate('created_at', $today)->sum('amount_paid');
+        $releasedToday = Clamping::whereDate('created_at', $today)
+            ->where('status', 'released')
+            ->count();
+
+        // This Week Statistics
+        $clampingsWeek = Clamping::where('created_at', '>=', $thisWeek)->count();
+        $revenueWeek = Payee::where('created_at', '>=', $thisWeek)->sum('amount_paid');
+        $releasedWeek = Clamping::where('created_at', '>=', $thisWeek)
+            ->where('status', 'released')
+            ->count();
+
+        // This Month Statistics
+        $clampingsMonth = Clamping::where('created_at', '>=', $thisMonth)->count();
         $revenueMonth = Payee::where('created_at', '>=', $thisMonth)->sum('amount_paid');
+        $releasedMonth = Clamping::where('created_at', '>=', $thisMonth)
+            ->where('status', 'released')
+            ->count();
+
+        // This Year Statistics
+        $clampingsYear = Clamping::where('created_at', '>=', $thisYear)->count();
         $revenueYear = Payee::where('created_at', '>=', $thisYear)->sum('amount_paid');
 
         // Status breakdown
@@ -49,11 +65,25 @@ class AnalyticsController extends Controller
             ->with('user')
             ->get();
 
-        // Monthly trend
-        $monthlyData = Clamping::selectRaw('DATE(created_at) as date, COUNT(*) as count, SUM(fine_amount) as revenue')
+        // Daily trend (current month)
+        $dailyData = Clamping::selectRaw('DATE(created_at) as date, COUNT(*) as count, SUM(fine_amount) as revenue')
             ->where('created_at', '>=', $thisMonth)
             ->groupBy('date')
             ->orderBy('date')
+            ->get();
+
+        // Weekly trend (current year)
+        $weeklyData = Clamping::selectRaw('WEEK(created_at) as week, COUNT(*) as count, SUM(fine_amount) as revenue')
+            ->where('created_at', '>=', $thisYear)
+            ->groupBy('week')
+            ->orderBy('week')
+            ->get();
+
+        // Monthly trend (all time)
+        $monthlyData = Clamping::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count, SUM(fine_amount) as revenue')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->limit(12)
             ->get();
 
         // Appeal Statistics
@@ -67,13 +97,20 @@ class AnalyticsController extends Controller
 
         return [
             'clampingsToday' => $clampingsToday,
+            'clampingsWeek' => $clampingsWeek,
             'clampingsMonth' => $clampingsMonth,
             'clampingsYear' => $clampingsYear,
             'revenueToday' => $revenueToday,
+            'revenueWeek' => $revenueWeek,
             'revenueMonth' => $revenueMonth,
             'revenueYear' => $revenueYear,
+            'releasedToday' => $releasedToday,
+            'releasedWeek' => $releasedWeek,
+            'releasedMonth' => $releasedMonth,
             'statusBreakdown' => $statusBreakdown,
             'topEnforcers' => $topEnforcers,
+            'dailyData' => $dailyData,
+            'weeklyData' => $weeklyData,
             'monthlyData' => $monthlyData,
             'appealStats' => $appealStats,
         ];

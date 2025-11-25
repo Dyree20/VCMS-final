@@ -21,7 +21,7 @@
 <!-- GPS Tracker Component -->
 <div id="gps-tracker-container" class="gps-tracker-section">
     <div class="gps-header">
-        <h2>📍 Real-Time Location Tracking</h2>
+        <h2><i class="fa-solid fa-location-dot"></i> Real-Time Location Tracking</h2>
         <div class="gps-status-container">
             <span id="gps-status-badge" class="status-badge status-offline">OFFLINE</span>
         </div>
@@ -30,7 +30,7 @@
     <!-- Status Check -->
     @if(!$user->location_tracking_enabled)
         <div class="warning-box">
-            <p>📍 Location tracking is currently <strong>DISABLED</strong></p>
+            <p><i class="fa-solid fa-location-dot"></i> Location tracking is currently <strong>DISABLED</strong></p>
             <p>To use GPS tracking, enable it in <strong>Account Settings → Security → Location Tracking</strong></p>
             <a href="{{ route('account.settings') }}" class="warning-action-btn">Go to Settings</a>
         </div>
@@ -38,10 +38,10 @@
         <!-- GPS Controls -->
         <div class="gps-controls">
             <button id="gps-start-btn" class="gps-btn gps-btn-primary">
-                🚀 Start Tracking
+                <i class="fa-solid fa-play"></i> Start Tracking
             </button>
             <button id="gps-stop-btn" class="gps-btn gps-btn-danger">
-                🛑 Stop Tracking
+                <i class="fa-solid fa-stop"></i> Stop Tracking
             </button>
         </div>
 
@@ -50,13 +50,13 @@
             <label>Set Your Status:</label>
             <div class="status-buttons">
                 <button class="status-btn status-btn-online" data-status="online">
-                    🟢 Online
+                    <i class="fa-solid fa-circle" style="color: #28a745; margin-right: 6px;"></i>Online
                 </button>
                 <button class="status-btn status-btn-break" data-status="on_break">
-                    🟡 On Break
+                    <i class="fa-solid fa-circle" style="color: #ffc107; margin-right: 6px;"></i>On Break
                 </button>
                 <button class="status-btn status-btn-offline" data-status="offline">
-                    🔴 Offline
+                    <i class="fa-solid fa-circle" style="color: #dc3545; margin-right: 6px;"></i>Offline
                 </button>
             </div>
         </div>
@@ -68,7 +68,7 @@
 
         <!-- Info Box -->
         <div class="gps-info-box">
-            <h4>📝 How GPS Tracking Works:</h4>
+            <h4><i class="fa-solid fa-note-sticky" style="margin-right: 8px;"></i>How GPS Tracking Works:</h4>
             <ul>
                 <li>Click "Start Tracking" to enable real-time GPS location sharing</li>
                 <li>Your location will be updated every 30 seconds</li>
@@ -375,4 +375,7 @@
         }
     }
 </style>
+
+<script src="{{ asset('js/gps-tracker.js') }}?v={{ time() }}"></script>
+
 @endsection

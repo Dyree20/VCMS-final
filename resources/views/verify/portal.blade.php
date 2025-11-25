@@ -11,7 +11,7 @@
         <!-- Success Alert -->
         @if(session('success'))
         <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
-            ✅ {{ session('success') }}
+            <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
         </div>
         @endif
 
@@ -54,7 +54,7 @@
             <a href="{{ url('/pay/' . $clamping->ticket_no) }}" class="pay-btn">Pay Online</a>
         @else
             <div style="background-color: #e7f5ff; border: 1px solid #74c0fc; color: #1971c2; padding: 12px 16px; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 10px;">
-                ✅ This ticket has been paid. Thank you!
+                <i class="fa-solid fa-circle-check"></i> This ticket has been paid. Thank you!
             </div>
         @endif
 
