@@ -16,7 +16,7 @@
 
     $profileUpdateRoute = match (true) {
         str_contains($currentRoute, 'front-desk') => 'front-desk.profile.update',
-        str_contains($currentRoute, 'enforcer') => 'profile.update',
+        str_contains($currentRoute, 'enforcer') => 'enforcer.profile.update',
         default => 'admin.profile.update',
     };
 @endphp

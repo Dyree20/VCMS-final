@@ -28,20 +28,22 @@ use App\Http\Controllers\SearchController;
 |
 */
 Route::get('/', function () {
-    return view('auth.login');
-});
+    return view('welcome');
+})->name('home');
 
 // API Routes
 Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->middleware('auth');
 
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register.form');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/account-procedure', [AuthController::class, 'showLoginForm'])->name('account.form');
+// Keep old routes for backward compatibility
+Route::get('/login', function() { return redirect()->route('account.form'); });
+Route::get('/register', function() { return redirect()->route('account.form'); });
+Route::post('/account-procedure', [AuthController::class, 'login'])->name('account.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/account-procedure/register', [AuthController::class, 'register'])->name('account.register');
+// Keep old routes for backward compatibility
+Route::post('/login', function() { return redirect()->route('account.form'); });
+Route::post('/register', function() { return redirect()->route('account.form'); });
 
 // Forgot Password Routes
 Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('forgot-password.form');
@@ -189,8 +191,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/enforcer/dashboard', [EnforcerController::class, 'index'])->name('enforcer.dashboard');
     Route::get('/enforcer/summary', [EnforcerController::class, 'getSummary']);
     Route::get('/enforcer/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('enforcer.profile');
-    Route::get('/enforcer/profile/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/enforcer/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/enforcer/profile/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('enforcer.profile.edit');
+    Route::put('/enforcer/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('enforcer.profile.update');
     
     // Profile Management Routes - For Enforcer specific pages (edit photo, transactions, etc)
     Route::post('/profile/update-photo', [EnforcerController::class, 'updatePhoto'])->name('profile.update-photo');

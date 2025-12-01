@@ -86,7 +86,7 @@
             </div>
         </div>
         <div class="profile-actions">
-            <a href="{{ route('profile.edit') }}" class="action-btn primary">
+            <a href="{{ route('enforcer.profile.edit') }}" class="action-btn primary">
                 <i class="fa-solid fa-edit"></i> Edit Profile
             </a>
         </div>

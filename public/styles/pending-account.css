@@ -1,0 +1,126 @@
+/* Pending Account Restrictions Styles */
+
+.pending-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.pending-disabled::after {
+    content: 'Awaiting Approval';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 193, 7, 0.95);
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-link.pending-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-link.pending-disabled:hover {
+    background: transparent;
+}
+
+.card.pending-disabled {
+    background: linear-gradient(135deg, rgba(100, 100, 100, 0.05), rgba(150, 150, 150, 0.05));
+    border: 1px dashed #ccc;
+}
+
+.btn.pending-disabled {
+    background: linear-gradient(135deg, #cccccc, #aaaaaa);
+    color: #666;
+    cursor: not-allowed;
+    border: 1px solid #999;
+}
+
+.btn.pending-disabled:hover {
+    background: linear-gradient(135deg, #cccccc, #aaaaaa);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Warning banner for pending accounts */
+.pending-account-banner {
+    background: linear-gradient(135deg, #fff3cd, #fff8e1);
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.pending-account-banner i {
+    font-size: 24px;
+    color: #ff9800;
+    margin-top: 2px;
+}
+
+.pending-account-banner-content {
+    flex: 1;
+}
+
+.pending-account-banner-content h4 {
+    color: #ff9800;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.pending-account-banner-content p {
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.pending-account-banner-content ul {
+    list-style: none;
+    margin-top: 10px;
+    padding-left: 0;
+}
+
+.pending-account-banner-content ul li {
+    color: #856404;
+    font-size: 13px;
+    margin: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.pending-account-banner-content ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #ffc107;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .pending-disabled::after {
+        font-size: 10px;
+        padding: 6px 12px;
+    }
+
+    .pending-account-banner {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pending-account-banner i {
+        font-size: 20px;
+    }
+}

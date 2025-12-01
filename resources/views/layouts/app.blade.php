@@ -15,11 +15,12 @@
     <link rel="stylesheet" href="{{ asset('styles/dialog.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/overlay.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/teams-show.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/pending-account.css') }}">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
-<body>
+<body data-user-status="{{ strtolower(auth()->user()->status->status ?? 'active') }}">
     <div class="sidebar">
         @php
             $currentUser = auth()->user();
@@ -878,6 +879,7 @@
 
 <script src="{{ asset('js/overlay.js') }}"></script>
 <script src="{{ asset('js/payment.js') }}"></script>
+<script src="{{ asset('js/pending-account.js') }}"></script>
 @if($isEnforcerRole)
     <script src="{{ asset('js/gps-tracker.js') }}"></script>
     <script>

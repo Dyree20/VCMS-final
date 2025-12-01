@@ -28,9 +28,53 @@
     });
     </script>
     <link rel="stylesheet" href="/../../styles/overlay.css">
+    <style>
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: #4361ee;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(-3px);
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+    </style>
 
 </head>
 <body>
+    <div class="back-button-container">
+        <a href="{{ route('home') }}" class="back-button" title="Back to Home">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+    </div>
+    
     <div class="auth-mobile-logo-bar">
         <img src="/images/VCMSlogo.png" alt="Auth Logo">
     </div>
@@ -42,7 +86,7 @@
 
         <!-- Registration Form -->
         <div class="auth-form-container auth-register-container">
-            <form action="{{ route('register') }}" id="registerForm" method="POST" class="auth-form">
+            <form action="{{ route('account.register') }}" id="registerForm" method="POST" class="auth-form">
                 @csrf
                 <h2>Create Account</h2>
                 <input type="text" class="auth-input" placeholder="First Name" name="f_name" required>
@@ -67,7 +111,7 @@
 
         <!-- Login Form -->
         <div class="auth-form-container auth-login-container">
-            <form action="{{ route('login') }}" method="POST" id="loginForm" class="auth-form">
+            <form action="{{ route('account.login') }}" method="POST" id="loginForm" class="auth-form">
                 @csrf
                 <div class="auth-logo-bar">
                     <img src="/images/VCMSlogo.png" alt="Auth Logo">
@@ -85,7 +129,7 @@
                 <div class="auth-extra-links">
                     <a href="{{ route('forgot-password.form') }}">Forgot password?</a>
                 </div>
-                <button type="button" class="mobile-register-button" onclick="window.location.href='/register'">
+                <button type="button" class="mobile-register-button" onclick="window.location.href='{{ route('account.form') }}'">
                      Don't have an account? Register
                 </button>
             </form>
@@ -95,7 +139,7 @@
         <div class="auth-register-cta-panel">
             <h2>Hello, Staff!</h2>
             <p>New to Auth System? Enter your details and start your journey.</p>
-            <a href="/register" class="auth-button auth-ghost">Register</a>
+            <a href="{{ route('account.form') }}" class="auth-button auth-ghost">Register</a>
         </div>
 
         <!-- <div id="submitOverlay" class="overlay hidden">

@@ -234,7 +234,7 @@
 
                 <!-- Back Link -->
                 <div class="back-link">
-                    <a href="{{ route('login.form') }}">← Back to Login</a>
+                    <a href="{{ route('account.form') }}">← Back to Login</a>
                 </div>
             </form>
         </div>

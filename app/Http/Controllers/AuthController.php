@@ -73,10 +73,23 @@ class AuthController extends Controller
 
             $user = Auth::user();
             $status = strtolower($user->status->status ?? '');
-            if (in_array($status, ['pending', 'suspended', 'rejected'])) {
+            
+            // Allow pending users to log in with limited access
+            if ($status === 'pending') {
+                // Pending users can log in - they'll have limited access via middleware
+                // Log device information for this login
+                \App\Http\Controllers\DeviceManagerController::logDevice($request, $user);
+                
+                // Redirect pending users to their profile only
+                return redirect()->route($user->role_id === 2 ? 'enforcer.profile' : 'admin.profile')
+                    ->with('warning', 'Your account is pending approval. You can only access your profile.');
+            }
+            
+            // Block suspended and rejected users
+            if (in_array($status, ['suspended', 'rejected'])) {
                 Auth::logout();
                 return back()->withErrors([
-                    'login' => 'Your account is not approved. Please contact the administrator.'
+                    'login' => 'Your account is ' . $status . '. Please contact the administrator.'
                 ])->onlyInput('login');
             }
 

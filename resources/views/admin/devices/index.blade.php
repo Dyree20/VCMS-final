@@ -10,7 +10,7 @@
             <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #333;">Device Manager</h1>
             <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Manage your connected devices and sessions for security</p>
         </div>
-        <a href="{{ route($userRole === 'Front Desk' ? 'front-desk.profile' : ($userRole === 'Enforcer' ? 'profile' : 'admin.profile')) }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f0f0f0; color: #666; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s;">
+        <a href="{{ route($userRole === 'Front Desk' ? 'front-desk.profile' : ($userRole === 'Enforcer' ? 'enforcer.profile' : 'admin.profile')) }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f0f0f0; color: #666; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s;">
             <i class="fa-solid fa-arrow-left"></i>
             Back to Profile
         </a>

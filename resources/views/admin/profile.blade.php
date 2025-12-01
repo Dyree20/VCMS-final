@@ -15,8 +15,8 @@
         $profileUpdateRoute = 'front-desk.profile.update';
         $dashboardRoute = 'front-desk.dashboard';
     } elseif (str_contains($currentRoute, 'enforcer') || $userRole === 'Enforcer') {
-        $profileEditRoute = 'profile.edit';
-        $profileUpdateRoute = 'profile.update';
+        $profileEditRoute = 'enforcer.profile.edit';
+        $profileUpdateRoute = 'enforcer.profile.update';
         $dashboardRoute = 'enforcer.dashboard';
     } else {
         $profileEditRoute = 'admin.profile.edit';
@@ -66,6 +66,27 @@
 
     <!-- Main Content -->
     <div class="settings-content">
+        <!-- Pending Account Notice -->
+        @php
+            $userStatus = strtolower($user->status->status ?? 'active');
+            $isPending = $userStatus === 'pending';
+        @endphp
+        
+        @if($isPending)
+            <div class="pending-account-banner">
+                <i class="fas fa-clock"></i>
+                <div class="pending-account-banner-content">
+                    <h4>Account Pending Approval</h4>
+                    <p>Your account is currently awaiting administrator approval. In the meantime, you have limited access:</p>
+                    <ul>
+                        <li>View and edit your profile information</li>
+                        <li>Manage your account settings and security</li>
+                        <li>Other features will be available once approved</li>
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         <!-- Profile Section -->
         <div class="settings-section" id="profile-section">
             <div class="section-header">
@@ -139,19 +160,19 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <label>Country</label>
-                        <p>{{ $user->details && $user->details->address ? $user->details->address : 'Not specified' }}</p>
+                        <p>{{ $user->details && $user->details->country ? $user->details->country : 'Not specified' }}</p>
                     </div>
                     <div class="info-item">
                         <label>City/State</label>
-                        <p>Not specified</p>
+                        <p>{{ $user->details && $user->details->city ? $user->details->city : 'Not specified' }}</p>
                     </div>
                     <div class="info-item">
                         <label>Postal Code</label>
-                        <p>Not specified</p>
+                        <p>{{ $user->details && $user->details->postal_code ? $user->details->postal_code : 'Not specified' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>Member Since</label>
-                        <p>{{ $user->created_at->format('F d, Y') }}</p>
+                        <label>Street Address</label>
+                        <p>{{ $user->details && $user->details->address ? $user->details->address : 'Not specified' }}</p>
                     </div>
                 </div>
             </div>

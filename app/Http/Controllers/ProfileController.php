@@ -28,7 +28,7 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
         
-        $formType = $request->input('form_type', 'profile');
+        $formType = $request->input('form_type', 'personal');
 
         if ($formType === 'login') {
             $validated = $request->validate([
@@ -47,13 +47,32 @@ class ProfileController extends Controller
             }
 
             $user->update($updateData);
+        } elseif ($formType === 'address') {
+            $validated = $request->validate([
+                'country' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'postal_code' => 'nullable|string|max:20',
+                'address' => 'nullable|string',
+                'bio' => 'nullable|string',
+            ]);
+
+            UserDetail::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'country' => $validated['country'] ?? null,
+                    'city' => $validated['city'] ?? null,
+                    'postal_code' => $validated['postal_code'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'bio' => $validated['bio'] ?? null,
+                ]
+            );
         } else {
+            // Personal form (default)
             $validated = $request->validate([
                 'f_name' => 'required|string|max:255',
                 'l_name' => 'required|string|max:255',
                 'phone' => 'nullable|string',
                 'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'address' => 'nullable|string',
                 'nationality' => 'nullable|string|max:255',
                 'gender' => 'nullable|string|in:Male,Female,Other',
                 'birthdate' => 'nullable|date',
@@ -78,7 +97,6 @@ class ProfileController extends Controller
                 ['user_id' => $user->id],
                 [
                     'photo' => $path,
-                    'address' => $validated['address'] ?? null,
                     'nationality' => $validated['nationality'] ?? null,
                     'gender' => $validated['gender'] ?? null,
                     'birth_date' => $validated['birthdate'] ?? null,

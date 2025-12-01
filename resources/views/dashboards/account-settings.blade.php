@@ -37,7 +37,7 @@
                     <p>Update your password to keep your account secure.</p>
                 </div>
             </div>
-            <a href="{{ route('profile.edit') }}" class="setting-button">
+            <a href="{{ route('enforcer.profile.edit') }}" class="setting-button">
                 <span>Change Password</span>
             </a>
         </div>
