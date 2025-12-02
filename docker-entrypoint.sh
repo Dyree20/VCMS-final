@@ -30,18 +30,21 @@ echo "DB_PASSWORD=${DB_PASSWORD:0:10}***" # Show first 10 chars of password
 
 # Ensure required environment variables are set in .env for Railway/production
 if [ -n "$DB_HOST" ]; then
-    echo "Setting database configuration from environment variables..."
-    # Use PHP to safely update .env (more reliable than sed)
-    php -r "
-    \$env = file_get_contents('.env');
-    \$env = preg_replace('/^DB_HOST=.*/m', 'DB_HOST=' . getenv('DB_HOST'), \$env);
-    \$env = preg_replace('/^DB_PORT=.*/m', 'DB_PORT=' . getenv('DB_PORT'), \$env);
-    \$env = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=' . getenv('DB_DATABASE'), \$env);
-    \$env = preg_replace('/^DB_USERNAME=.*/m', 'DB_USERNAME=' . getenv('DB_USERNAME'), \$env);
-    \$env = preg_replace('/^DB_PASSWORD=.*/m', 'DB_PASSWORD=' . getenv('DB_PASSWORD'), \$env);
-    file_put_contents('.env', \$env);
-    echo 'Environment variables synced to .env\n';
-    " 2>&1 || echo "Warning: PHP .env update failed, environment variables will be used directly"
+    echo "Syncing Railway environment variables to .env..."
+    # Use a temporary file to safely handle passwords with special characters
+    {
+        while IFS='=' read -r key value; do
+            case "$key" in
+                DB_HOST) echo "DB_HOST=$DB_HOST" ;;
+                DB_PORT) echo "DB_PORT=$DB_PORT" ;;
+                DB_DATABASE) echo "DB_DATABASE=$DB_DATABASE" ;;
+                DB_USERNAME) echo "DB_USERNAME=$DB_USERNAME" ;;
+                DB_PASSWORD) echo "DB_PASSWORD=$DB_PASSWORD" ;;
+                *) [ -n "$key" ] && echo "$key=$value" ;;
+            esac
+        done < .env
+    } > .env.tmp && mv .env.tmp .env
+    echo "Environment variables synced"
 fi
 
 # Display current config
