@@ -13,17 +13,21 @@ fi
 
 echo "Generating app key if needed..."
 if ! grep -q "APP_KEY=" .env; then
-    php artisan key:generate
+    echo "Generating application key..."
+    php artisan key:generate || true
 fi
 
 echo "Running composer post-autoload-dump..."
-composer run-script post-autoload-dump || true
+timeout 30 composer run-script post-autoload-dump || echo "Warning: composer post-autoload-dump timed out or failed"
 
 echo "Caching config..."
-php artisan config:cache || true
+timeout 30 php artisan config:cache || echo "Warning: config cache failed"
 
-echo "Attempting migrations (this may fail if DB not ready)..."
-php artisan migrate --force || echo "Migration skipped (DB may not be ready yet)"
+echo "DB_CONNECTION=${DB_CONNECTION:-pgsql}"
+if [ "${SKIP_MIGRATIONS}" != "true" ]; then
+    echo "Running migrations..."
+    timeout 60 php artisan migrate --force || echo "Warning: migrations skipped"
+fi
 
 echo "Starting services with supervisor..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -2,28 +2,20 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    locales \
-    zip \
-    jpegoptim optipng pngquant gifsicle \
-    curl \
-    git \
-    wget \
-    ca-certificates \
+# Install minimal system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    libpq-dev \
+    zip \
+    curl \
     nginx \
     supervisor \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# Install PHP extensions only (no build-essential, no image tools)
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
@@ -32,7 +24,6 @@ RUN docker-php-ext-install \
     exif \
     pcntl \
     bcmath \
-    gd \
     zip \
     xml
 
