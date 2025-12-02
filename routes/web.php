@@ -27,6 +27,12 @@ use App\Http\Controllers\SearchController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'message' => 'VCMS is running'], 200);
+});
+
 Route::get('/', function () {
     return view('welcome');
 })->name('home');

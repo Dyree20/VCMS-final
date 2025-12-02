@@ -3,5 +3,5 @@ builder = "dockerfile"
 
 [deploy]
 startCommand = "bash /usr/local/bin/docker-entrypoint.sh"
-healthCheckUrl = "http://localhost:8080"
+healthCheckUrl = "http://localhost:8080/health"
 healthCheckInterval = 10
