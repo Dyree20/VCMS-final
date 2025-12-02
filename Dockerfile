@@ -36,17 +36,23 @@ RUN docker-php-ext-install \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy only composer files first
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies (without scripts to avoid artisan not found error)
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
 # Copy application files
 COPY . .
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Now run composer scripts after artisan is available
+RUN composer run-script post-autoload-dump
 
-# Create .env from .env.example if it exists, otherwise create empty .env
-RUN if [ -f .env.example ]; then cp .env.example .env; else echo "APP_NAME=VCMS\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=http://localhost" > .env; fi
+# Create .env if it doesn't exist
+RUN if [ ! -f .env ]; then echo "APP_NAME=VCMS\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=http://localhost" > .env; fi
 
 # Generate application key
 RUN php artisan key:generate
