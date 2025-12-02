@@ -1,6 +1,5 @@
 FROM php:8.2-fpm
 
-# Set working directory
 WORKDIR /var/www/html
 
 # Install system dependencies
@@ -39,30 +38,19 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
-# List files to debug
-RUN ls -la /var/www/html | grep -E "(artisan|composer)"
-
-# Make artisan executable
-RUN chmod +x /var/www/html/artisan
-
-# Install PHP dependencies (skip scripts)
+# Install PHP dependencies (skip scripts during build)
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
 # Create .env if not exists
-RUN if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || echo "APP_NAME=VCMS\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=http://localhost" > .env; fi
+RUN if [ ! -f .env ]; then cp .env.example .env || echo "APP_NAME=VCMS" > .env; fi
 
-# Generate app key
-RUN php artisan key:generate --force
-
-# Run composer post-autoload-dump
-RUN composer run-script post-autoload-dump
-
-# Cache config
-RUN php artisan config:cache
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 9000
 
-CMD ["php-fpm"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
