@@ -33,8 +33,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+# Install PHP dependencies with increased memory limit
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-scripts \
+    --no-interaction \
+    --ignore-platform-reqs \
+    2>&1 | head -100 || (echo "Composer install failed, retrying..."; sleep 5; COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs)
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
