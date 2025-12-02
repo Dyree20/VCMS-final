@@ -26,4 +26,3 @@ DOCKER_DEPLOYMENT_GUIDE.md
 .env.production
 tests
 phpunit.xml
-artisan
