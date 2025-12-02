@@ -22,7 +22,6 @@ DOCKER_DEPLOYMENT_GUIDE.md
 *.md
 .github
 .gitlab-ci.yml
-.env.example
 .env.production
 tests
 phpunit.xml
