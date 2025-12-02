@@ -43,6 +43,7 @@ Route::get('/debug/env', function () {
         'DB_PASSWORD' => env('DB_PASSWORD') ? '*** SET ***' : 'NOT SET',
         'APP_ENV' => env('APP_ENV'),
         'APP_KEY' => env('APP_KEY') ? 'SET' : 'NOT SET',
+        'SESSION_DRIVER' => env('SESSION_DRIVER'),
         'Config_DB_Host' => config('database.connections.mysql.host'),
         'Config_DB_Port' => config('database.connections.mysql.port'),
         'Config_DB_Database' => config('database.connections.mysql.database'),
@@ -52,9 +53,18 @@ Route::get('/debug/env', function () {
 Route::get('/debug/test-db', function () {
     try {
         \DB::connection('mysql')->getPdo();
-        return response()->json(['status' => 'MySQL connection OK']);
+        return response()->json(['status' => 'MySQL connection OK', 'message' => 'Database is reachable']);
     } catch (\Exception $e) {
         return response()->json(['status' => 'MySQL connection FAILED', 'error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/debug/migrations', function () {
+    try {
+        $migrations = \DB::table('migrations')->get();
+        return response()->json(['status' => 'OK', 'migrations_count' => count($migrations), 'migrations' => $migrations]);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'FAILED', 'error' => $e->getMessage()], 500);
     }
 });
 

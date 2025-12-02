@@ -82,8 +82,15 @@ echo "Skipping config cache (using runtime env vars for Railway compatibility)"
 echo "[5/7] Running migrations..."
 if [ "${SKIP_MIGRATIONS}" != "true" ]; then
     echo "Attempting to run migrations..."
-    # Try to run migrations, but don't fail if database isn't available
-    timeout 60 php artisan migrate --force 2>&1 | grep -E "(Migration|DONE|Error|Connection)" || true
+    # Try migrations, capture success/failure
+    if timeout 60 php artisan migrate --force 2>&1 | tee /tmp/migration.log; then
+        echo "Migrations completed successfully"
+        # If migrations succeeded, switch back to database sessions
+        sed -i.bak 's/^SESSION_DRIVER=file/SESSION_DRIVER=database/g' .env || true
+        rm -f .env.bak
+    else
+        echo "Migrations failed or database unavailable - continuing with file-based sessions"
+    fi
 else
     echo "Skipping migrations (SKIP_MIGRATIONS=true)"
 fi
