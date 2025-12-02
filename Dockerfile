@@ -30,17 +30,23 @@ RUN docker-php-ext-install \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
-COPY . .
+# Copy only composer files first
+COPY composer.json composer.lock* ./
 
-# Install PHP dependencies with increased memory limit
+# Pre-download composer dependencies (with error tolerance)
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     --no-dev \
-    --optimize-autoloader \
     --no-scripts \
     --no-interaction \
+    --prefer-dist \
     --ignore-platform-reqs \
-    2>&1 | head -100 || (echo "Composer install failed, retrying..."; sleep 5; COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs)
+    || echo "Warning: Initial composer install had issues, will retry at runtime"
+
+# Copy remaining application files
+COPY . .
+
+# Ensure vendor exists even if composer failed
+RUN test -d vendor || mkdir -p vendor
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html

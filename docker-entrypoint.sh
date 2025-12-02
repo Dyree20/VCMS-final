@@ -11,14 +11,21 @@ if [ ! -f artisan ]; then
     exit 1
 fi
 
+# Ensure composer dependencies are installed
+echo "Checking composer dependencies..."
+if [ ! -d vendor ] || [ -z "$(ls -A vendor)" ]; then
+    echo "Installing composer dependencies..."
+    COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --prefer-dist --ignore-platform-reqs || echo "Warning: composer install had issues"
+fi
+
+echo "Running composer post-autoload-dump..."
+timeout 30 composer run-script post-autoload-dump || echo "Warning: composer post-autoload-dump timed out or failed"
+
 echo "Generating app key if needed..."
 if ! grep -q "APP_KEY=" .env; then
     echo "Generating application key..."
     php artisan key:generate || true
 fi
-
-echo "Running composer post-autoload-dump..."
-timeout 30 composer run-script post-autoload-dump || echo "Warning: composer post-autoload-dump timed out or failed"
 
 echo "Caching config..."
 timeout 30 php artisan config:cache || echo "Warning: config cache failed"
