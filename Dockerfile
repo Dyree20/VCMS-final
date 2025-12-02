@@ -50,11 +50,11 @@ RUN chown -R www-data:www-data /var/www/html
 RUN if [ ! -f .env ]; then cp .env.example .env || echo "APP_NAME=VCMS" > .env; fi
 
 # Configure Nginx
-RUN mkdir -p /var/run/nginx && \
-    sed -i 's/listen 80;/listen 8080;/g' /etc/nginx/sites-available/default || true
+RUN mkdir -p /var/run/nginx
 
 # Create Nginx config for Laravel
-RUN echo 'server {
+RUN cat > /etc/nginx/sites-available/default <<'EOF'
+server {
     listen 8080;
     server_name _;
     root /var/www/html/public;
@@ -75,10 +75,12 @@ RUN echo 'server {
     location ~ /\.ht {
         deny all;
     }
-}' > /etc/nginx/sites-available/default
+}
+EOF
 
 # Create supervisor config for running both nginx and php-fpm
-RUN echo '[supervisord]
+RUN cat > /etc/supervisor/conf.d/supervisord.conf <<'EOF'
+[supervisord]
 nodaemon=true
 logfile=/dev/stdout
 logfile_maxbytes=0
@@ -99,7 +101,8 @@ autorestart=true
 stderr_logfile=/dev/stdout
 stderr_logfile_maxbytes=0
 stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0' > /etc/supervisor/conf.d/supervisord.conf
+stdout_logfile_maxbytes=0
+EOF
 
 # Copy entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
