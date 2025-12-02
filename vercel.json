@@ -1,0 +1,42 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install && composer install --no-dev",
+  "framework": "laravel",
+  "outputDirectory": "public",
+  "serverless": {
+    "nodejs": "18.x"
+  },
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "LOG_CHANNEL": "stack",
+    "CACHE_DRIVER": "database",
+    "SESSION_DRIVER": "database",
+    "QUEUE_CONNECTION": "database"
+  },
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/api/(.*)",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "dest": "api/handler.php"
+    },
+    {
+      "src": "^/storage/(.*)",
+      "status": 403
+    },
+    {
+      "src": "^\\.env",
+      "status": 403
+    },
+    {
+      "src": "^/(.*)",
+      "dest": "public/$1"
+    }
+  ]
+}

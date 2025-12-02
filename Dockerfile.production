@@ -1,0 +1,90 @@
+# Dockerfile for production deployment with multi-stage build
+# Optimized for size and security
+
+FROM php:8.2-fpm-alpine as builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    build-base \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    git \
+    curl \
+    bash
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install Node.js
+RUN apk add --no-cache nodejs npm
+
+# Copy application files
+COPY . .
+
+# Build application
+RUN composer install --no-dev --optimize-autoloader --no-interaction \
+    && npm install --production \
+    && npm run build \
+    && rm -rf node_modules .git .gitignore
+
+# Production image
+FROM php:8.2-fpm-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    libpng \
+    libjpeg \
+    libfreetype \
+    libzip \
+    mysql-client \
+    curl
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Copy from builder
+COPY --from=builder /app .
+
+# Create necessary directories
+RUN mkdir -p storage/logs storage/framework storage/app \
+    && chmod -R 755 storage bootstrap/cache
+
+# Set user
+RUN addgroup -g 1000 www-data \
+    && adduser -D -G www-data -u 1000 www-data \
+    && chown -R www-data:www-data /app
+
+USER www-data
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:9000/health || exit 1
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
