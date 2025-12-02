@@ -45,8 +45,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy environment file
-COPY .env.example .env
+# Create .env from .env.example if it exists, otherwise create empty .env
+RUN if [ -f .env.example ]; then cp .env.example .env; else echo "APP_NAME=VCMS\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=http://localhost" > .env; fi
 
 # Generate application key
 RUN php artisan key:generate
