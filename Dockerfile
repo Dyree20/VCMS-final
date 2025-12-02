@@ -6,16 +6,19 @@ WORKDIR /var/www/html
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    libpq-dev \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
-    libzip-dev \
+    locales \
     zip \
-    unzip \
-    git \
+    jpegoptim optipng pngquant gifsicle \
     curl \
+    git \
     wget \
+    ca-certificates \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -27,34 +30,30 @@ RUN docker-php-ext-install \
     pcntl \
     bcmath \
     gd \
-    zip
+    zip \
+    xml
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy application files
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p storage bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Install Node dependencies and build assets
-RUN npm install && npm run build
+# Copy environment file
+COPY .env.example .env
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
+# Generate application key
+RUN php artisan key:generate
 
-# Expose port
-EXPOSE 8000
+# Cache config and routes
+RUN php artisan config:cache && php artisan route:cache
 
-# Run Laravel migrations and start server
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]
+EXPOSE 9000
+
+CMD ["php-fpm"]
