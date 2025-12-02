@@ -1,1 +1,7 @@
-runtime = "dockerfile"
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "bash /usr/local/bin/docker-entrypoint.sh"
+healthCheckUrl = "http://localhost:8080"
+healthCheckInterval = 10

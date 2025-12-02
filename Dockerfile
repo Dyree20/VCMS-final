@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions only (no build-essential, no image tools)
+# Install PHP extensions
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
@@ -32,31 +32,31 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy only composer files first
 COPY composer.json composer.lock* ./
 
-# Pre-download composer dependencies (with error tolerance)
+# Pre-download composer dependencies
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     --no-dev \
     --no-scripts \
     --no-interaction \
     --prefer-dist \
     --ignore-platform-reqs \
-    || echo "Warning: Initial composer install had issues, will retry at runtime"
+    || echo "Warning: Initial composer install had issues"
 
 # Copy remaining application files
 COPY . .
 
-# Ensure vendor exists even if composer failed
+# Ensure vendor exists
 RUN test -d vendor || mkdir -p vendor
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Create .env if not exists
+# Create .env
 RUN if [ ! -f .env ]; then cp .env.example .env || echo "APP_NAME=VCMS" > .env; fi
 
 # Configure Nginx
 RUN mkdir -p /var/run/nginx
 
-# Create Nginx config for Laravel
+# Create Nginx config
 RUN cat > /etc/nginx/sites-available/default <<'EOF'
 server {
     listen 8080;
@@ -88,4 +88,5 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# Use bash explicitly
+CMD ["/bin/bash", "/usr/local/bin/docker-entrypoint.sh"]
