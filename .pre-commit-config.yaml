@@ -1,0 +1,21 @@
+# Secret detection configuration for pre-commit
+# Install: pip install detect-secrets
+
+# Patterns to detect
+[tool:detect_secrets]
+baseline = .secrets.baseline
+
+# Disabled plugins that are too noisy
+disable_plugins = [
+    'Base64HighEntropyString',
+    'HexHighEntropyString',
+]
+
+# Patterns to ignore
+exclude_paths = [
+    'node_modules',
+    'vendor',
+    'storage',
+    'bootstrap/cache',
+    '.git',
+]

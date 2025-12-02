@@ -1,0 +1,34 @@
+#!/bin/bash
+# Pre-commit hook to prevent secrets from being committed
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "🔐 Scanning for secrets before commit..."
+
+# Check for common API key patterns
+if git diff --cached | grep -E '(sk_live_|sk_test_|pk_live_|pk_test_|STRIPE_|stripe|api_key|secret_key|password|token)' | grep -v "^[+-].*://\|^[+-].*@\|example\|template\|YOUR_\|your_\|\.md" > /dev/null; then
+    echo "⚠️  WARNING: Potential secrets found in staged changes!"
+    echo ""
+    echo "Matches found:"
+    git diff --cached | grep -E '(sk_live_|sk_test_|pk_live_|pk_test_|STRIPE_|stripe|api_key|secret_key|password|token)' | grep -v "^[+-].*://\|^[+-].*@\|example\|template\|YOUR_\|your_"
+    echo ""
+    echo "To bypass this check (NOT RECOMMENDED):"
+    echo "  git commit --no-verify"
+    echo ""
+    echo "Better: Remove secrets and commit again"
+    exit 1
+fi
+
+# Check for .env files
+if git diff --cached --name-only | grep -E '\.env($|\..*$)' > /dev/null; then
+    echo "⚠️  WARNING: .env file being committed!"
+    echo ""
+    echo "NEVER commit .env files with secrets!"
+    echo ""
+    echo "To fix:"
+    echo "  git reset .env"
+    echo "  git commit"
+    exit 1
+fi
+
+echo "✅ No secrets detected. Proceeding with commit..."
+exit 0
