@@ -4,9 +4,6 @@ set -e
 cd /var/www/html
 
 echo "Starting VCMS application..."
-echo "Current directory: $(pwd)"
-echo "Listing files:"
-ls -la | head -20
 
 # Check if artisan exists
 if [ ! -f artisan ]; then
@@ -25,8 +22,8 @@ composer run-script post-autoload-dump || true
 echo "Caching config..."
 php artisan config:cache || true
 
-echo "Running migrations..."
-php artisan migrate --force || true
+echo "Attempting migrations (this may fail if DB not ready)..."
+php artisan migrate --force || echo "Migration skipped (DB may not be ready yet)"
 
-echo "Starting php-fpm..."
-exec php-fpm
+echo "Starting services with supervisor..."
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

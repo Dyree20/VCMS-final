@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vcms
+    runtime: docker
+    plan: starter
+    branch: master
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+    healthCheckPath: /health
+    healthCheckInterval: 3600
+    headers:
+      - name: "Cache-Control"
+        value: "public, max-age=3600"
