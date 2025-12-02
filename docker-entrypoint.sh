@@ -36,5 +36,11 @@ if [ "${SKIP_MIGRATIONS}" != "true" ]; then
     timeout 60 php artisan migrate --force || echo "Warning: migrations skipped"
 fi
 
-echo "Starting services with supervisor..."
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+echo "Starting PHP-FPM in background..."
+php-fpm -D
+
+echo "Waiting for PHP-FPM to start..."
+sleep 2
+
+echo "Starting Nginx..."
+exec nginx -g "daemon off;"

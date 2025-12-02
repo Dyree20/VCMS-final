@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     curl \
     nginx \
-    supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -81,32 +80,6 @@ server {
         deny all;
     }
 }
-EOF
-
-# Create supervisor config for running both nginx and php-fpm
-RUN cat > /etc/supervisor/conf.d/supervisord.conf <<'EOF'
-[supervisord]
-nodaemon=true
-logfile=/dev/stdout
-logfile_maxbytes=0
-
-[program:php-fpm]
-command=php-fpm
-autostart=true
-autorestart=true
-stderr_logfile=/dev/stdout
-stderr_logfile_maxbytes=0
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-
-[program:nginx]
-command=nginx -g "daemon off;"
-autostart=true
-autorestart=true
-stderr_logfile=/dev/stdout
-stderr_logfile_maxbytes=0
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
 EOF
 
 # Copy entrypoint
