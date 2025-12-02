@@ -17,10 +17,22 @@ fi
 echo "[0/7] Checking .env file..."
 if [ ! -f .env ]; then
     echo "Creating .env from .env.example..."
-    cp .env.example .env || echo "APP_NAME=VCMS" > .env
+    cp .env.example .env || true
 fi
 
-# Display current APP_KEY
+# Ensure required environment variables are set in .env for Railway/production
+if [ -n "$DB_HOST" ]; then
+    echo "Setting database configuration from environment variables..."
+    sed -i "s|DB_HOST=.*|DB_HOST=${DB_HOST}|g" .env
+    sed -i "s|DB_PORT=.*|DB_PORT=${DB_PORT:-3306}|g" .env
+    sed -i "s|DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE}|g" .env
+    sed -i "s|DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME}|g" .env
+    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|g" .env
+fi
+
+# Display current config
+echo "DB Configuration:"
+grep "^DB_" .env || echo "No DB config found"
 echo "Current APP_KEY: $(grep APP_KEY .env | cut -d= -f2)"
 
 echo "[1/7] Generating app key if needed..."
