@@ -20,18 +20,28 @@ if [ ! -f .env ]; then
     cp .env.example .env || true
 fi
 
+# Debug: Show environment variables
+echo "DEBUG - Environment variables:"
+echo "DB_HOST=${DB_HOST}"
+echo "DB_PORT=${DB_PORT}"
+echo "DB_DATABASE=${DB_DATABASE}"
+echo "DB_USERNAME=${DB_USERNAME}"
+echo "DB_PASSWORD=${DB_PASSWORD:0:10}***" # Show first 10 chars of password
+
 # Ensure required environment variables are set in .env for Railway/production
 if [ -n "$DB_HOST" ]; then
     echo "Setting database configuration from environment variables..."
-    sed -i "s|DB_HOST=.*|DB_HOST=${DB_HOST}|g" .env
-    sed -i "s|DB_PORT=.*|DB_PORT=${DB_PORT:-3306}|g" .env
-    sed -i "s|DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE}|g" .env
-    sed -i "s|DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME}|g" .env
-    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|g" .env
+    # Use sed with backup extension for compatibility
+    sed -i.bak "s|^DB_HOST=.*|DB_HOST=${DB_HOST}|g" .env
+    sed -i.bak "s|^DB_PORT=.*|DB_PORT=${DB_PORT:-3306}|g" .env
+    sed -i.bak "s|^DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE}|g" .env
+    sed -i.bak "s|^DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME}|g" .env
+    sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|g" .env
+    rm -f .env.bak
 fi
 
 # Display current config
-echo "DB Configuration:"
+echo "DB Configuration in .env:"
 grep "^DB_" .env || echo "No DB config found"
 echo "Current APP_KEY: $(grep APP_KEY .env | cut -d= -f2)"
 
@@ -54,7 +64,9 @@ fi
 echo "[3/7] Running composer post-autoload-dump..."
 timeout 30 composer run-script post-autoload-dump 2>&1 | tail -10 || echo "Warning: composer post-autoload-dump failed"
 
-echo "[4/7] Caching config..."
+echo "[3/7] Caching config..."
+# First clear any old cached config
+rm -rf bootstrap/cache/config.php 2>/dev/null || true
 timeout 30 php artisan config:cache 2>&1 | tail -5 || echo "Warning: config cache failed"
 
 echo "[5/7] Running migrations..."
