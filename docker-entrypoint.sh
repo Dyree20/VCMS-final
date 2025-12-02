@@ -6,6 +6,13 @@ echo "========================================"
 echo "Starting VCMS application..."
 echo "========================================"
 
+# Fix permissions early
+echo "Fixing file permissions..."
+chmod -R 755 /var/www/html
+chmod -R 775 /var/www/html/storage
+chmod -R 775 /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
+
 # Check if artisan exists
 if [ ! -f artisan ]; then
     echo "ERROR: artisan file not found in $(pwd)"
@@ -31,26 +38,38 @@ echo "DB_PASSWORD=${DB_PASSWORD:0:10}***" # Show first 10 chars of password
 # Ensure required environment variables are set in .env for Railway/production
 if [ -n "$DB_HOST" ]; then
     echo "Syncing Railway environment variables to .env..."
+    echo "  DB_HOST: $DB_HOST"
+    echo "  DB_PORT: $DB_PORT"
+    echo "  DB_DATABASE: $DB_DATABASE"
+    echo "  DB_USERNAME: $DB_USERNAME"
+    echo "  DB_PASSWORD: ${DB_PASSWORD:0:5}*** (length: ${#DB_PASSWORD})"
+    
     # Use a temporary file to safely handle passwords with special characters
     {
-        while IFS='=' read -r key value; do
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty lines and comments
+            if [ -z "$key" ] || [[ "$key" =~ ^# ]]; then
+                [ -z "$key" ] && echo "" || echo "$key=$value"
+                continue
+            fi
+            
             case "$key" in
-                DB_HOST) echo "DB_HOST=$DB_HOST" ;;
-                DB_PORT) echo "DB_PORT=$DB_PORT" ;;
-                DB_DATABASE) echo "DB_DATABASE=$DB_DATABASE" ;;
-                DB_USERNAME) echo "DB_USERNAME=$DB_USERNAME" ;;
-                DB_PASSWORD) echo "DB_PASSWORD=$DB_PASSWORD" ;;
-                *) [ -n "$key" ] && echo "$key=$value" ;;
+                DB_HOST) [ -n "$DB_HOST" ] && echo "DB_HOST=$DB_HOST" || echo "$key=$value" ;;
+                DB_PORT) [ -n "$DB_PORT" ] && echo "DB_PORT=$DB_PORT" || echo "$key=$value" ;;
+                DB_DATABASE) [ -n "$DB_DATABASE" ] && echo "DB_DATABASE=$DB_DATABASE" || echo "$key=$value" ;;
+                DB_USERNAME) [ -n "$DB_USERNAME" ] && echo "DB_USERNAME=$DB_USERNAME" || echo "$key=$value" ;;
+                DB_PASSWORD) [ -n "$DB_PASSWORD" ] && echo "DB_PASSWORD=$DB_PASSWORD" || echo "$key=$value" ;;
+                *) echo "$key=$value" ;;
             esac
         done < .env
     } > .env.tmp && mv .env.tmp .env
-    echo "Environment variables synced"
+    echo "✓ Environment variables synced to .env"
+else
+    echo "⚠ No DB_HOST environment variable - using .env defaults"
 fi
 
-# Display current config
-echo "DB Configuration in .env:"
-grep "^DB_" .env || echo "No DB config found"
-echo "Current APP_KEY: $(grep APP_KEY .env | cut -d= -f2)"
+echo "DB Configuration in .env (final):"
+grep "^DB_" .env | sed 's/DB_PASSWORD=.*/DB_PASSWORD=***/' || echo "No DB config found"
 
 echo "[1/7] Generating app key if needed..."
 if ! grep -q "APP_KEY=base64:" .env; then
