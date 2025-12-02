@@ -36,26 +36,32 @@ RUN docker-php-ext-install \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy ALL application files first (before composer install)
+# Copy application files
 COPY . .
 
-# Install PHP dependencies with --no-scripts to skip post-autoload-dump
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# List files to debug
+RUN ls -la /var/www/html | grep -E "(artisan|composer)"
+
+# Make artisan executable
+RUN chmod +x /var/www/html/artisan
+
+# Install PHP dependencies (skip scripts)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html
 
-# Create .env if it doesn't exist
+# Create .env if not exists
 RUN if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || echo "APP_NAME=VCMS\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=http://localhost" > .env; fi
 
-# Generate application key (required before running artisan commands)
-RUN php artisan key:generate
+# Generate app key
+RUN php artisan key:generate --force
 
-# Now run composer post-autoload-dump script after artisan exists
+# Run composer post-autoload-dump
 RUN composer run-script post-autoload-dump
 
-# Cache config and routes
-RUN php artisan config:cache && php artisan route:cache
+# Cache config
+RUN php artisan config:cache
 
 EXPOSE 9000
 
