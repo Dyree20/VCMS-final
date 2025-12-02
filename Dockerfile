@@ -4,7 +4,6 @@ WORKDIR /var/www/html
 
 # Install minimal system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
@@ -18,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
-    pdo_pgsql \
     mbstring \
     exif \
     pcntl \
