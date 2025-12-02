@@ -81,8 +81,9 @@ echo "Skipping config cache (using runtime env vars for Railway compatibility)"
 
 echo "[5/7] Running migrations..."
 if [ "${SKIP_MIGRATIONS}" != "true" ]; then
-    echo "Attempting to run migrations (will continue even if database unavailable)..."
-    timeout 60 php artisan migrate --force 2>&1 | tail -15 || echo "Info: migrations skipped or failed (database may not be ready yet)"
+    echo "Attempting to run migrations..."
+    # Try to run migrations, but don't fail if database isn't available
+    timeout 60 php artisan migrate --force 2>&1 | grep -E "(Migration|DONE|Error|Connection)" || true
 else
     echo "Skipping migrations (SKIP_MIGRATIONS=true)"
 fi
