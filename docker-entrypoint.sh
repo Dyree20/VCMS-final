@@ -31,13 +31,17 @@ echo "DB_PASSWORD=${DB_PASSWORD:0:10}***" # Show first 10 chars of password
 # Ensure required environment variables are set in .env for Railway/production
 if [ -n "$DB_HOST" ]; then
     echo "Setting database configuration from environment variables..."
-    # Use sed with backup extension for compatibility
-    sed -i.bak "s|^DB_HOST=.*|DB_HOST=${DB_HOST}|g" .env
-    sed -i.bak "s|^DB_PORT=.*|DB_PORT=${DB_PORT:-3306}|g" .env
-    sed -i.bak "s|^DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE}|g" .env
-    sed -i.bak "s|^DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME}|g" .env
-    sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|g" .env
-    rm -f .env.bak
+    # Use PHP to safely update .env (more reliable than sed)
+    php -r "
+    \$env = file_get_contents('.env');
+    \$env = preg_replace('/^DB_HOST=.*/m', 'DB_HOST=' . getenv('DB_HOST'), \$env);
+    \$env = preg_replace('/^DB_PORT=.*/m', 'DB_PORT=' . getenv('DB_PORT'), \$env);
+    \$env = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=' . getenv('DB_DATABASE'), \$env);
+    \$env = preg_replace('/^DB_USERNAME=.*/m', 'DB_USERNAME=' . getenv('DB_USERNAME'), \$env);
+    \$env = preg_replace('/^DB_PASSWORD=.*/m', 'DB_PASSWORD=' . getenv('DB_PASSWORD'), \$env);
+    file_put_contents('.env', \$env);
+    echo 'Environment variables synced to .env\n';
+    " 2>&1 || echo "Warning: PHP .env update failed, environment variables will be used directly"
 fi
 
 # Display current config
@@ -65,9 +69,15 @@ echo "[3/7] Running composer post-autoload-dump..."
 timeout 30 composer run-script post-autoload-dump 2>&1 | tail -10 || echo "Warning: composer post-autoload-dump failed"
 
 echo "[3/7] Caching config..."
-# First clear any old cached config
-rm -rf bootstrap/cache/config.php 2>/dev/null || true
-timeout 30 php artisan config:cache 2>&1 | tail -5 || echo "Warning: config cache failed"
+# Skip config caching in Railway - we need dynamic env vars for database connection
+# Config caching would freeze DB credentials at build time, breaking Railway deployments
+# if [ "${SKIP_CONFIG_CACHE}" != "true" ]; then
+#     rm -rf bootstrap/cache/config.php 2>/dev/null || true
+#     timeout 30 php artisan config:cache 2>&1 | tail -5 || echo "Warning: config cache failed"
+# else
+#     echo "Skipping config cache (SKIP_CONFIG_CACHE=true)"
+# fi
+echo "Skipping config cache (using runtime env vars for Railway compatibility)"
 
 echo "[5/7] Running migrations..."
 if [ "${SKIP_MIGRATIONS}" != "true" ]; then
