@@ -207,6 +207,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{id}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('/users/{id}/reject', [UserController::class, 'reject'])->name('users.reject');
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{id}/assign-role', [UserController::class, 'assignRole'])->name('users.assign-role');
     Route::post('/users/{id}/assign-zone', [UserController::class, 'assignZone'])->name('users.assign-zone');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
 

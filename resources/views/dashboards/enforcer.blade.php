@@ -64,7 +64,17 @@
                     e.preventDefault();
                     const msg = el.dataset.confirmMessage || 'Are you sure you want to log out?';
                     if (confirm(msg)) {
-                        logoutForm.submit();
+                        // Stop tracking and set status to offline before logging out
+                        if (window.gpsTracker) {
+                            window.gpsTracker.stopTracking();
+                            window.gpsTracker.setStatus('offline');
+                            // Wait a moment for status update to complete, then logout
+                            setTimeout(() => {
+                                logoutForm.submit();
+                            }, 500);
+                        } else {
+                            logoutForm.submit();
+                        }
                     }
                 });
             });

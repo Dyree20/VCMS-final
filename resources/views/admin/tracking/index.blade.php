@@ -2,6 +2,9 @@
 
 @section('title', 'Enforcer Tracking')
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 @section('content')
 <div class="tracking-container">
     <div class="tracking-header">
@@ -29,15 +32,25 @@
         <button id="refreshBtn" class="refresh-btn"><i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i>Refresh</button>
     </div>
 
-    <div class="enforcers-grid" id="enforcersContainer">
-        <div class="loading">Loading enforcers...</div>
-    </div>
+    <div class="tracking-content">
+        <!-- Enforcers Cards Column -->
+        <div class="enforcers-column">
+            <div class="enforcers-grid" id="enforcersContainer">
+                <div class="loading">Loading enforcers...</div>
+            </div>
 
-    <div id="noDataState" class="no-data" style="display: none;">
-        <div class="no-data-content">
-            <p style="font-size: 48px; margin: 0;"><i class="fa-solid fa-location-dot" style="font-size: 48px;"></i></p>
-            <h3>No Online Enforcers</h3>
-            <p>No enforcers are currently sharing their location.</p>
+            <div id="noDataState" class="no-data" style="display: none;">
+                <div class="no-data-content">
+                    <p style="font-size: 48px; margin: 0;"><i class="fa-solid fa-location-dot" style="font-size: 48px;"></i></p>
+                    <h3>No Online Enforcers</h3>
+                    <p>No enforcers are currently sharing their location.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Column -->
+        <div class="map-column">
+            <div id="enforcerMap"></div>
         </div>
     </div>
 </div>
@@ -48,7 +61,7 @@
 
 <style>
     .tracking-container {
-        max-width: 1200px;
+        max-width: 1600px;
         margin: 0 auto;
         padding: 20px;
     }
@@ -133,34 +146,80 @@
     .refresh-btn:hover {
         background: #1f43cc;
     }
-    .enforcers-grid {
+
+    /* Two-column layout */
+    .tracking-content {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 16px;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 24px;
+        min-height: 700px;
     }
+
+    .enforcers-column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .enforcers-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        padding-right: 8px;
+        max-height: calc(100vh - 400px);
+    }
+
+    .enforcers-grid::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .enforcers-grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .enforcers-grid::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .enforcers-grid::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
     .enforcer-card {
         background: #fff;
-        border: 1px solid #e0e0e0;
+        border: 2px solid #e0e0e0;
         border-radius: 12px;
-        padding: 18px;
+        padding: 16px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        transition: 0.2s;
+        transition: all 0.2s;
+        cursor: pointer;
     }
+
     .enforcer-card:hover {
-        transform: translateY(-2px);
+        transform: translateX(-4px);
         box-shadow: 0 6px 18px rgba(0,0,0,0.15);
         border-color: #2b58ff;
     }
+
+    .enforcer-card.highlighted {
+        background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+        border-color: #2b58ff;
+        box-shadow: 0 0 0 3px rgba(43, 88, 255, 0.15);
+        transform: translateX(-4px);
+    }
+
     .enforcer-header {
         display: flex;
         justify-content: space-between;
         gap: 10px;
         align-items: flex-start;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
     .enforcer-name {
         margin: 0;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
         color: #1f2937;
     }
@@ -170,6 +229,7 @@
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
+        white-space: nowrap;
     }
     .status-online {
         background: #e8f5e9;
@@ -180,66 +240,87 @@
         color: #ed6900;
     }
     .enforcer-info {
-        font-size: 13px;
+        font-size: 12px;
         color: #4b5563;
-        line-height: 1.5;
+        line-height: 1.4;
     }
     .info-row {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 6px;
+        gap: 6px;
+        margin-bottom: 4px;
     }
     .info-label {
         font-weight: 600;
-        min-width: 80px;
+        min-width: 70px;
         color: #374151;
     }
     .location-badges {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         flex-wrap: wrap;
-        margin-top: 12px;
+        margin-top: 10px;
+        padding-top: 10px;
         border-top: 1px solid #f0f0f0;
-        padding-top: 12px;
     }
     .badge {
-        padding: 4px 10px;
+        padding: 3px 8px;
         border-radius: 999px;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
         background: #f3f4f6;
         color: #4b5563;
+        white-space: nowrap;
     }
     .badge-accuracy {
         background: #e3f2fd;
         color: #1d4ed8;
     }
-    .enforcer-actions {
-        margin-top: 14px;
+
+    /* Map column */
+    .map-column {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
-    .action-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        border-radius: 10px;
-        background: #eef2ff;
-        color: #4338ca;
-        font-weight: 600;
-        font-size: 13px;
-        text-decoration: none;
+
+    #enforcerMap {
+        width: 100%;
+        height: 100%;
+        min-height: 700px;
     }
-    .action-link:hover {
-        background: #4338ca;
-        color: #fff;
-    }
+
     .loading, .no-data {
-        grid-column: 1 / -1;
         text-align: center;
         padding: 40px;
         color: #9ca3af;
     }
+
+    .no-data {
+        grid-column: 1 / -1;
+    }
+
+    .no-data-content p {
+        margin: 0;
+    }
+
+    @media (max-width: 1200px) {
+        .tracking-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        #enforcerMap {
+            min-height: 500px;
+        }
+
+        .enforcers-grid {
+            max-height: 400px;
+        }
+    }
+
     @media (max-width: 768px) {
         .tracking-controls {
             flex-direction: column;
@@ -247,12 +328,24 @@
         .search-input, .sort-select, .refresh-btn {
             width: 100%;
         }
-        .enforcers-grid {
+        
+        .tracking-content {
             grid-template-columns: 1fr;
+        }
+
+        #enforcerMap {
+            min-height: 400px;
+        }
+
+        .enforcer-card {
+            padding: 12px;
+        }
+
+        .enforcer-name {
+            font-size: 14px;
         }
     }
 </style>
-
 <script>
     class EnforcerTrackingDashboard {
         constructor() {
@@ -262,14 +355,34 @@
             this.refreshBtn = document.getElementById('refreshBtn');
             this.onlineCount = document.getElementById('onlineCount');
             this.noDataState = document.getElementById('noDataState');
+            this.mapContainer = document.getElementById('enforcerMap');
             this.historyBaseUrl = "{{ $trackUrlBase }}";
 
             this.enforcers = [];
             this.filteredEnforcers = [];
+            this.map = null;
+            this.markers = {};
+            this.selectedEnforcer = null;
 
             this.bindEvents();
+            this.initMap();
             this.loadData();
-            setInterval(() => this.loadData(), 30000);
+            // Refresh data every 10 seconds for real-time updates
+            setInterval(() => this.loadData(), 10000);
+        }
+
+        initMap() {
+            // Initialize Leaflet map centered on Manila
+            this.map = L.map(this.mapContainer).setView([14.5995, 121.0012], 13);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(this.map);
+
+            // Enable scroll wheel zoom
+            this.map.scrollWheelZoom.enable();
         }
 
         bindEvents() {
@@ -285,11 +398,79 @@
                 .then(data => {
                     this.enforcers = data.enforcers || [];
                     this.onlineCount.textContent = this.enforcers.length;
+                    this.updateMap();
                     this.filter();
                 })
                 .catch(() => {
                     this.container.innerHTML = '<div class="loading">Failed to load data</div>';
                 });
+        }
+
+        updateMap() {
+            // Clear existing markers
+            Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
+            this.markers = {};
+
+            if (!this.enforcers.length) return;
+
+            // Add markers for all enforcers
+            this.enforcers.forEach(enforcer => {
+                const marker = L.circleMarker([enforcer.latitude, enforcer.longitude], {
+                    radius: 8,
+                    fillColor: '#2b58ff',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8,
+                    className: `enforcer-marker-${enforcer.user_id}`
+                }).addTo(this.map);
+
+                // Add popup with enforcer info
+                const name = `${enforcer.user.f_name} ${enforcer.user.l_name}`;
+                marker.bindPopup(`
+                    <div style="font-weight: 600; margin-bottom: 6px;">${name}</div>
+                    <div style="font-size: 12px; color: #666;">
+                        <div>Status: <span style="color: #28a745; font-weight: 600;">${enforcer.status.replace('_', ' ')}</span></div>
+                        <div>Accuracy: ${enforcer.accuracy_meters}m</div>
+                    </div>
+                `);
+
+                this.markers[enforcer.user_id] = marker;
+            });
+
+            // Auto-fit map to all markers
+            if (Object.keys(this.markers).length > 0) {
+                const group = new L.featureGroup(Object.values(this.markers));
+                this.map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        highlightEnforcer(enforcerId) {
+            // Remove previous highlight
+            if (this.selectedEnforcer) {
+                const previousCard = document.querySelector(`[data-enforcer-id="${this.selectedEnforcer}"]`);
+                if (previousCard) previousCard.classList.remove('highlighted');
+                
+                const previousMarker = this.markers[this.selectedEnforcer];
+                if (previousMarker) {
+                    previousMarker.setRadius(8);
+                    previousMarker.setStyle({ fillColor: '#2b58ff', weight: 2 });
+                }
+            }
+
+            this.selectedEnforcer = enforcerId;
+
+            // Highlight new card
+            const card = document.querySelector(`[data-enforcer-id="${enforcerId}"]`);
+            if (card) card.classList.add('highlighted');
+
+            // Highlight new marker
+            const marker = this.markers[enforcerId];
+            if (marker) {
+                marker.setRadius(12);
+                marker.setStyle({ fillColor: '#ff6b6b', weight: 3 });
+                this.map.panTo(marker.getLatLng());
+            }
         }
 
         filter() {
@@ -318,11 +499,11 @@
                 return;
             }
 
-            this.container.style.display = 'grid';
+            this.container.style.display = 'flex';
             this.noDataState.style.display = 'none';
 
             this.container.innerHTML = this.filteredEnforcers.map(enforcer => `
-                <div class="enforcer-card">
+                <div class="enforcer-card" data-enforcer-id="${enforcer.user_id}">
                     <div class="enforcer-header">
                         <h3 class="enforcer-name">${enforcer.user.f_name} ${enforcer.user.l_name}</h3>
                         <span class="enforcer-status status-${enforcer.status}">
@@ -331,12 +512,12 @@
                     </div>
                     <div class="enforcer-info">
                         <div class="info-row">
-                            <span class="info-label">Latitude:</span>
-                            <span>${Number(enforcer.latitude).toFixed(6)}</span>
+                            <span class="info-label">Lat:</span>
+                            <span>${Number(enforcer.latitude).toFixed(4)}</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Longitude:</span>
-                            <span>${Number(enforcer.longitude).toFixed(6)}</span>
+                            <span class="info-label">Lng:</span>
+                            <span>${Number(enforcer.longitude).toFixed(4)}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Updated:</span>
@@ -344,16 +525,18 @@
                         </div>
                     </div>
                     <div class="location-badges">
-                        <span class="badge badge-accuracy"><i class="fa-solid fa-bullseye" style="margin-right: 6px;"></i>Accuracy: ${enforcer.accuracy_meters || 'N/A'}m</span>
-                        ${enforcer.address ? `<span class="badge">${enforcer.address}</span>` : ''}
-                    </div>
-                    <div class="enforcer-actions">
-                        <a href="${this.historyBaseUrl}/${enforcer.user_id}" class="action-link">
-                            View Movement History
-                        </a>
+                        <span class="badge badge-accuracy"><i class="fa-solid fa-bullseye" style="margin-right: 4px;"></i>${enforcer.accuracy_meters || 'N/A'}m</span>
                     </div>
                 </div>
             `).join('');
+
+            // Attach click handlers to cards
+            this.filteredEnforcers.forEach(enforcer => {
+                const card = document.querySelector(`[data-enforcer-id="${enforcer.user_id}"]`);
+                if (card) {
+                    card.addEventListener('click', () => this.highlightEnforcer(enforcer.user_id));
+                }
+            });
         }
 
         formatTime(ts) {

@@ -123,6 +123,83 @@ class UserController extends Controller
     }
 
     /**
+     * Assign a role to a user
+     */
+    public function assignRole(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'role_id' => 'required|exists:roles,id',
+            ]);
+
+            $user = User::findOrFail($id);
+            $role = \App\Models\Role::findOrFail($request->role_id);
+            
+            $user->role_id = $request->role_id;
+            
+            // Auto-generate enforcer_id if assigning Enforcer role and not already set
+            if (strtolower($role->name) === 'enforcer' && !$user->enforcer_id) {
+                $user->enforcer_id = $this->generateEnforcerId();
+            }
+            
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role assigned successfully',
+                'role' => $role->name,
+                'enforcer_id' => $user->enforcer_id
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error assigning role to user: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while assigning role: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate a unique enforcer ID
+     */
+    private function generateEnforcerId()
+    {
+        // Get all users with enforcer_id
+        $enforcers = User::whereNotNull('enforcer_id')
+            ->where('enforcer_id', '!=', '')
+            ->pluck('enforcer_id')
+            ->toArray();
+        
+        if (empty($enforcers)) {
+            return 'ENF-0001';
+        }
+        
+        // Extract numeric values from all enforcer IDs
+        $numbers = [];
+        foreach ($enforcers as $id) {
+            // Match patterns like ENF-0001, ENF-ADMIN-001, etc - extract last numeric part
+            if (preg_match('/(\d+)$/', $id, $matches)) {
+                $numbers[] = intval($matches[1]);
+            }
+        }
+        
+        if (empty($numbers)) {
+            return 'ENF-0001';
+        }
+        
+        // Get the highest number and add 1
+        $nextNumber = max($numbers) + 1;
+        
+        return 'ENF-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Toggle account status (activate/deactivate)
      */
     public function toggleStatus(Request $request, $id)

@@ -113,9 +113,34 @@
                                 </td>
                                 <td>{{ $enforcer->clampings_count }}</td>
                                 <td>
-                                    @if($enforcer->parkingZone)
+                                    @php
+                                        $assignedArea = null;
+                                        
+                                        // Check if assigned through teams
+                                        if ($enforcer->teams && $enforcer->teams->isNotEmpty()) {
+                                            $teamZones = $enforcer->teams->flatMap(function($team) {
+                                                return $team->parkingZones;
+                                            });
+                                            
+                                            if ($teamZones->isNotEmpty()) {
+                                                $assignedArea = $teamZones->pluck('name')->join(', ');
+                                            }
+                                        }
+                                        
+                                        // Check if assigned directly
+                                        if (!$assignedArea && $enforcer->parkingZone) {
+                                            $assignedArea = $enforcer->parkingZone->name;
+                                        }
+                                        
+                                        // Check if assigned through assigned_area field
+                                        if (!$assignedArea && $enforcer->assigned_area) {
+                                            $assignedArea = $enforcer->assigned_area;
+                                        }
+                                    @endphp
+                                    
+                                    @if($assignedArea)
                                         <span style="background: #e8f4f8; padding: 4px 8px; border-radius: 4px; color: #0c5577;">
-                                            {{ $enforcer->parkingZone->name }}
+                                            {{ $assignedArea }}
                                         </span>
                                     @else
                                         <span style="color: #999;">Not Assigned</span>

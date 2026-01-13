@@ -1,57 +1,28 @@
-@php
-    $currentRoute = Route::currentRouteName();
-    $userRole = $user->role->name ?? 'Admin';
-
-    $layout = match (true) {
-        str_contains($currentRoute, 'enforcer') => 'dashboards.enforcer',
-        str_contains($currentRoute, 'front-desk') => 'layouts.front-desk',
-        default => 'layouts.app',
-    };
-
-    $profileRoute = match (true) {
-        str_contains($currentRoute, 'front-desk') => 'front-desk.profile',
-        str_contains($currentRoute, 'enforcer') => 'enforcer.profile',
-        default => 'admin.profile',
-    };
-
-    $profileUpdateRoute = match (true) {
-        str_contains($currentRoute, 'front-desk') => 'front-desk.profile.update',
-        str_contains($currentRoute, 'enforcer') => 'enforcer.profile.update',
-        default => 'admin.profile.update',
-    };
-@endphp
-
-@extends($layout)
-
-@section('title', 'Edit Profile')
+@extends('dashboards.enforcer')
 
 @section('content')
+<!-- ENFORCER EDIT PROFILE VIEW - dashboards/edit-profile.blade.php -->
 <div class="edit-profile-wrapper">
-    <a href="{{ route($profileRoute) }}" class="back-link">
+    <a href="{{ route('enforcer.profile') }}" class="back-link">
         <i class="fa-solid fa-arrow-left"></i> Back to Profile
     </a>
 
     <!-- Main Edit Profile Container -->
     <div class="edit-profile-container">
-        <!-- Sidebar Navigation -->
-        <div class="edit-sidebar">
-            <h3 class="sidebar-title">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Profile Sections
-            </h3>
-            <nav class="edit-nav">
-                <a href="#personal" class="edit-nav-item active" data-section="personal">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Personal Information</span>
-                </a>
-                <a href="#address" class="edit-nav-item" data-section="address">
-                    <i class="fa-solid fa-map-pin"></i>
-                    <span>Address</span>
-                </a>
-                <a href="#login" class="edit-nav-item" data-section="login">
-                    <i class="fa-solid fa-lock"></i>
-                    <span>Login & Password</span>
-                </a>
-            </nav>
+        <!-- Tab Navigation - Top Horizontal Tabs -->
+        <div class="edit-tabs-top">
+            <button class="edit-tab-btn active" data-section="personal">
+                <i class="fa-solid fa-user"></i>
+                <span>Personal Information</span>
+            </button>
+            <button class="edit-tab-btn" data-section="address">
+                <i class="fa-solid fa-map-pin"></i>
+                <span>Address & Details</span>
+            </button>
+            <button class="edit-tab-btn" data-section="login">
+                <i class="fa-solid fa-lock"></i>
+                <span>Login & Password</span>
+            </button>
         </div>
 
         <!-- Forms Container -->
@@ -84,10 +55,10 @@
                         <h2>Personal Information</h2>
                         <p>Update your name, email, and phone number</p>
                     </div>
-                    <span class="role-chip">{{ $userRole }}</span>
+                    <span class="role-chip">Enforcer</span>
                 </div>
 
-                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                <form action="{{ route('enforcer.profile.update') }}" method="POST" class="edit-form">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="form_type" value="personal">
@@ -119,7 +90,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                        <a href="{{ route('enforcer.profile') }}" class="btn btn-secondary">
                             <i class="fa-solid fa-times"></i> Cancel
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -136,10 +107,10 @@
                         <h2>Address & Personal Details</h2>
                         <p>Update your location, address details, and identification</p>
                     </div>
-                    <span class="role-chip">{{ $userRole }}</span>
+                    <span class="role-chip">Enforcer</span>
                 </div>
 
-                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                <form action="{{ route('enforcer.profile.update') }}" method="POST" class="edit-form">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="form_type" value="address">
@@ -231,7 +202,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                        <a href="{{ route('enforcer.profile') }}" class="btn btn-secondary">
                             <i class="fa-solid fa-times"></i> Cancel
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -248,10 +219,10 @@
                         <h2>Login & Password</h2>
                         <p>Update your credentials and secure your account</p>
                     </div>
-                    <span class="role-chip">{{ $userRole }}</span>
+                    <span class="role-chip">Enforcer</span>
                 </div>
 
-                <form action="{{ route($profileUpdateRoute) }}" method="POST" class="edit-form">
+                <form action="{{ route('enforcer.profile.update') }}" method="POST" class="edit-form">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="form_type" value="login">
@@ -288,7 +259,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{{ route($profileRoute) }}" class="btn btn-secondary">
+                        <a href="{{ route('enforcer.profile') }}" class="btn btn-secondary">
                             <i class="fa-solid fa-times"></i> Cancel
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -325,67 +296,50 @@
     }
 
     .edit-profile-container {
-        display: grid;
-        grid-template-columns: 240px 1fr;
-        gap: 24px;
         background: white;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .edit-sidebar {
+    /* Horizontal Tabs */
+    .edit-tabs-top {
+        display: flex;
+        gap: 8px;
+        padding: 16px 24px;
         background: #f9fafb;
-        padding: 24px;
-        border-right: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        flex-wrap: wrap;
     }
 
-    .sidebar-title {
-        margin: 0 0 20px 0;
-        font-size: 14px;
-        font-weight: 700;
-        color: #333;
+    .edit-tab-btn {
         display: flex;
         align-items: center;
         gap: 8px;
-    }
-
-    .edit-nav {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .edit-nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
+        padding: 10px 16px;
+        border: 2px solid transparent;
         border-radius: 8px;
-        text-decoration: none;
+        background: white;
         color: #6b7280;
         font-size: 14px;
         font-weight: 500;
-        transition: all 0.3s;
         cursor: pointer;
-        border-left: 3px solid transparent;
+        transition: all 0.3s;
     }
 
-    .edit-nav-item:hover {
+    .edit-tab-btn:hover {
         background: #f3f4f6;
         color: #333;
     }
 
-    .edit-nav-item.active {
+    .edit-tab-btn.active {
         background: #e3f2fd;
         color: #2b58ff;
-        border-left-color: #2b58ff;
+        border-color: #2b58ff;
         font-weight: 600;
     }
 
-    .edit-nav-item i {
-        width: 18px;
-        text-align: center;
+    .edit-tab-btn i {
         font-size: 15px;
     }
 
@@ -641,35 +595,13 @@
     }
 
     @media (max-width: 768px) {
-        .edit-profile-container {
-            grid-template-columns: 1fr;
+        .edit-tabs-top {
+            flex-direction: column;
         }
 
-        .edit-sidebar {
-            border-right: none;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 16px;
-        }
-
-        .edit-nav {
-            flex-direction: row;
-            gap: 4px;
-        }
-
-        .edit-nav-item {
-            flex: 1;
-            padding: 10px 8px;
-            font-size: 12px;
+        .edit-tab-btn {
+            width: 100%;
             justify-content: center;
-        }
-
-        .edit-nav-item span {
-            display: none;
-        }
-
-        .edit-nav-item.active {
-            border-left: none;
-            border-bottom: 3px solid #2b58ff;
         }
 
         .edit-forms {
@@ -690,10 +622,6 @@
 
         .btn {
             width: 100%;
-        }
-
-        .sidebar-title {
-            display: none;
         }
     }
 
@@ -784,19 +712,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const navItems = document.querySelectorAll('.edit-nav-item');
+        const tabBtns = document.querySelectorAll('.edit-tab-btn');
         const sections = document.querySelectorAll('.edit-section');
 
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
                 const section = this.dataset.section;
 
-                // Remove active from all nav items and sections
-                navItems.forEach(nav => nav.classList.remove('active'));
+                // Remove active from all buttons and sections
+                tabBtns.forEach(b => b.classList.remove('active'));
                 sections.forEach(sec => sec.classList.remove('active'));
 
-                // Add active to clicked item and corresponding section
+                // Add active to clicked button and corresponding section
                 this.classList.add('active');
                 document.getElementById(section + '-section').classList.add('active');
             });

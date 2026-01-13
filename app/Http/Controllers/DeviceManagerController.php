@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\DeviceManager;
+use App\Models\EnforcerLocation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DeviceManagerController extends Controller
 {
@@ -55,6 +57,41 @@ class DeviceManagerController extends Controller
      */
     public function logoutAllDevices()
     {
+        $user = auth()->user();
+
+        // Set enforcer status to offline when they log out
+        if ($user) {
+            $user->load('role');
+            $roleName = strtolower($user->role->name ?? '');
+            
+            if ($roleName === 'enforcer') {
+                // Create offline location record
+                $lastLocation = EnforcerLocation::where('user_id', $user->id)
+                    ->latest()
+                    ->first();
+
+                if ($lastLocation) {
+                    EnforcerLocation::create([
+                        'user_id' => $user->id,
+                        'latitude' => $lastLocation->latitude,
+                        'longitude' => $lastLocation->longitude,
+                        'accuracy_meters' => $lastLocation->accuracy_meters,
+                        'address' => $lastLocation->address,
+                        'status' => 'offline',
+                    ]);
+                } else {
+                    EnforcerLocation::create([
+                        'user_id' => $user->id,
+                        'latitude' => 14.5995,
+                        'longitude' => 121.0012,
+                        'accuracy_meters' => 5000,
+                        'address' => 'Location not available',
+                        'status' => 'offline',
+                    ]);
+                }
+            }
+        }
+
         auth()->user()->devices()->update(['is_active' => false]);
         auth()->logout();
 

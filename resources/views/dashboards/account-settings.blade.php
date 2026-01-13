@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification('Location tracking disabled', 'info');
                 }
             } else {
-                locationToggle.checked = !enabled; // Revert toggle
+                locationToggle.checked = !this.checked; // Revert toggle
                 showNotification(data.message || 'Failed to update location preference', 'error');
             }
         })

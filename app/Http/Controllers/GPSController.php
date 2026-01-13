@@ -89,18 +89,29 @@ class GPSController extends Controller
      */
     public function getOnlineEnforcers(): JsonResponse
     {
-        $thirtyMinutesAgo = now()->subMinutes(30);
+        $thirtySecondsAgo = now()->subSeconds(30);
 
-        $onlineEnforcers = EnforcerLocation::with('user')
-            ->where('status', 'online')
-            ->where('created_at', '>=', $thirtyMinutesAgo)
-            ->latest('created_at')
-            ->get()
-            ->groupBy('user_id')
-            ->map(function ($locations) {
-                return $locations->first();
+        // Get all enforcers
+        $allEnforcers = User::with('role')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'like', '%enforcer%');
             })
-            ->values();
+            ->get();
+
+        $onlineEnforcers = collect();
+
+        // For each enforcer, get their LATEST location record and check if it's online
+        foreach ($allEnforcers as $enforcer) {
+            $lastLocation = EnforcerLocation::with('user')
+                ->where('user_id', $enforcer->id)
+                ->latest('created_at')
+                ->first();
+
+            // Only include if latest status is 'online' and from last 30 seconds
+            if ($lastLocation && $lastLocation->status === 'online' && $lastLocation->created_at >= $thirtySecondsAgo) {
+                $onlineEnforcers->push($lastLocation);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -148,6 +159,43 @@ class GPSController extends Controller
             EnforcerLocation::where('user_id', $user->id)
                 ->where('created_at', '>=', now()->subHours(1))
                 ->update(['status' => $validated['status']]);
+
+            // If setting to online and no recent locations exist, create one
+            if ($validated['status'] === 'online') {
+                $hasRecentLocation = EnforcerLocation::where('user_id', $user->id)
+                    ->where('created_at', '>=', now()->subMinutes(5))
+                    ->exists();
+
+                if (!$hasRecentLocation) {
+                    // Get last known location or use default
+                    $lastLocation = EnforcerLocation::where('user_id', $user->id)
+                        ->latest()
+                        ->first();
+
+                    if ($lastLocation) {
+                        // Create new record with last known location and online status
+                        EnforcerLocation::create([
+                            'user_id' => $user->id,
+                            'latitude' => $lastLocation->latitude,
+                            'longitude' => $lastLocation->longitude,
+                            'accuracy_meters' => $lastLocation->accuracy_meters,
+                            'address' => $lastLocation->address,
+                            'status' => 'online',
+                        ]);
+                    } else {
+                        // No location history - create placeholder location with Manila coordinates
+                        // This allows enforcers without location access to still show as online
+                        EnforcerLocation::create([
+                            'user_id' => $user->id,
+                            'latitude' => 14.5995,  // Manila, Philippines
+                            'longitude' => 121.0012,
+                            'accuracy_meters' => 5000,  // High accuracy radius to indicate no exact location
+                            'address' => 'Location not available',
+                            'status' => 'online',
+                        ]);
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,

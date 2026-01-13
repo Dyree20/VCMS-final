@@ -81,7 +81,17 @@
                 </div>
                 <div class="info-col">
                     <label>Birth Date</label>
-                    <span>{{ $user->details && $user->details->birthdate ? $user->details->birthdate->format('F d, Y') : 'Not specified' }}</span>
+                    <span>{{ $user->details && $user->details->birth_date ? $user->details->birth_date->format('F d, Y') : 'Not specified' }}</span>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-col">
+                    <label>ID Type</label>
+                    <span>{{ $user->details && $user->details->id_type ? $user->details->id_type : 'Not specified' }}</span>
+                </div>
+                <div class="info-col">
+                    <label>ID Number</label>
+                    <span>{{ $user->details && $user->details->id_number ? $user->details->id_number : 'Not specified' }}</span>
                 </div>
             </div>
         </div>
@@ -867,13 +877,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification('Location tracking disabled', 'info');
                 }
             } else {
-                locationToggle.checked = !enabled;
+                locationToggle.checked = !this.checked;
                 showErrorMessage(data.message || 'Failed to update location preference');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            locationToggle.checked = !enabled;
+            locationToggle.checked = !this.checked;
             showErrorMessage('An error occurred');
         });
     }

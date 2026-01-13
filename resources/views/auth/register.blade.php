@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Register</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/../../styles/authentication.css">
     <link rel="stylesheet" href="/../../styles/auth-overlay.css">
     <link rel="stylesheet" href="/../../styles/overlay.css">
@@ -37,14 +38,18 @@
                         <input type="text" class="auth-input" placeholder="Last Name" name="l_name" required>
                         <input type="email" class="auth-input" placeholder="Email" name="email" required>
                         <input type="text" class="auth-input" placeholder="Username" name="username" required>
-                        <input type="password" class="auth-input" placeholder="Password" name="password" required>
-                        <input type="password" class="auth-input" placeholder="Confirm Password" name="password_confirmation" required>
-                        <select name="role_id" class="auth-input" required>
-                            <option value="" disabled selected>Select Role</option>
-                            <option value="1">Admin</option>
-                            <option value="2">Enforcer</option>
-                            <option value="3">Front Desk</option>
-                        </select>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="auth-input password-input" placeholder="Password" name="password" required>
+                            <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="auth-input password-input" placeholder="Confirm Password" name="password_confirmation" required>
+                            <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         <button type="submit" class="auth-button">Register</button>
                         <div class="auth-extra-links">
                             <a href="/login">Already have an account? Login</a>
@@ -68,6 +73,27 @@
     <script>
         document.addEventListener('DOMContentLoaded', function(){
             // nothing needed, registration.js will handle submission and show overlays
+
+            // Password Toggle Functionality
+            document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const input = this.parentElement.querySelector('.password-input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                        this.classList.add('visible');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                        this.classList.remove('visible');
+                    }
+                });
+            });
         });
     </script>
 </body>

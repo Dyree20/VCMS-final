@@ -85,7 +85,7 @@ class DashboardController extends Controller
         $enforcers = User::whereHas('role', function($q) {
             $q->where('name', 'Enforcer');
         })
-        ->with(['role', 'status'])
+        ->with(['role', 'status', 'parkingZone', 'teams.parkingZones'])
         ->withCount(['clampings' => function($q) {
             $q->where('status', '!=', 'released');
         }])
@@ -96,8 +96,8 @@ class DashboardController extends Controller
                 ->latest()
                 ->first();
             
-            // Check if enforcer is online (location updated in last 30 minutes)
-            $enforcer->is_online = $latestLocation && $latestLocation->created_at->greaterThan(now()->subMinutes(30));
+            // Check if enforcer is online (location updated in last 30 seconds)
+            $enforcer->is_online = $latestLocation && $latestLocation->created_at->greaterThan(now()->subSeconds(30));
             $enforcer->online_status = $latestLocation ? $latestLocation->status : 'offline';
             $enforcer->last_seen = $latestLocation ? $latestLocation->created_at->diffForHumans() : 'Never';
             

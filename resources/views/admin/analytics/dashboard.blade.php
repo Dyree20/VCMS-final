@@ -133,32 +133,7 @@
         </div>
     </div>
 
-    <!-- Appeal Statistics -->
-    <div class="analytics-section">
-        <h2 class="analytics-section-title">Appeal Statistics</h2>
-        <div class="analytics-appeal-stats">
-            <div class="appeal-stat">
-                <div class="appeal-stat-value">{{ $appealStats['total'] }}</div>
-                <div class="appeal-stat-label">Total Appeals</div>
-            </div>
-            <div class="appeal-stat pending">
-                <div class="appeal-stat-value">{{ $appealStats['pending'] }}</div>
-                <div class="appeal-stat-label">Pending</div>
-            </div>
-            <div class="appeal-stat review">
-                <div class="appeal-stat-value">{{ $appealStats['under_review'] }}</div>
-                <div class="appeal-stat-label">Under Review</div>
-            </div>
-            <div class="appeal-stat approved">
-                <div class="appeal-stat-value">{{ $appealStats['approved'] }}</div>
-                <div class="appeal-stat-label">Approved</div>
-            </div>
-            <div class="appeal-stat rejected">
-                <div class="appeal-stat-value">{{ $appealStats['rejected'] }}</div>
-                <div class="appeal-stat-label">Rejected</div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <link rel="stylesheet" href="{{ asset('styles/analytics.css') }}">

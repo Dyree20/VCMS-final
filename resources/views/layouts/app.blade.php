@@ -888,6 +888,19 @@
                 return;
             }
 
+            // Only initialize GPS tracking on specific pages (enforcer dashboard, gps-location)
+            const currentUrl = window.location.pathname;
+            const shouldEnableTracking = 
+                currentUrl.includes('/enforcer/dashboard') || 
+                currentUrl.includes('/enforcer/gps') ||
+                currentUrl.includes('/gps-location') ||
+                currentUrl.includes('/tracking');
+
+            if (!shouldEnableTracking) {
+                console.log('GPS tracking disabled on this page:', currentUrl);
+                return;
+            }
+
             if (!window.gpsTracker) {
                 window.gpsTracker = new EnforcerGPSTracker({
                     updateInterval: 30000,

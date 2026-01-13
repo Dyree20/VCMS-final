@@ -17,6 +17,8 @@ class UserDetail extends Model
         'nationality',
         'gender',
         'birth_date',
+        'id_type',
+        'id_number',
     ];
 
     protected $casts = [

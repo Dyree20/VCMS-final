@@ -21,6 +21,16 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
         $user->load(['role', 'status', 'details']);
+        
+        // Return role-specific edit profile view
+        $roleName = $user->role ? strtolower($user->role->name) : '';
+        
+        if ($roleName === 'enforcer') {
+            \Log::info('Loading enforcer edit profile view', ['user_id' => $user->id, 'role' => $roleName]);
+            return view('dashboards.edit-profile', compact('user'));
+        }
+        
+        \Log::info('Loading admin edit profile view', ['user_id' => $user->id, 'role' => $roleName]);
         return view('admin.edit-profile', compact('user'));
     }
 
@@ -49,6 +59,10 @@ class ProfileController extends Controller
             $user->update($updateData);
         } elseif ($formType === 'address') {
             $validated = $request->validate([
+                'gender' => 'nullable|string|in:male,female,other,prefer_not',
+                'birth_date' => 'nullable|date',
+                'id_type' => 'nullable|string|max:255',
+                'id_number' => 'nullable|string|max:255',
                 'country' => 'nullable|string|max:255',
                 'city' => 'nullable|string|max:255',
                 'postal_code' => 'nullable|string|max:20',
@@ -59,6 +73,10 @@ class ProfileController extends Controller
             UserDetail::updateOrCreate(
                 ['user_id' => $user->id],
                 [
+                    'gender' => $validated['gender'] ?? null,
+                    'birth_date' => $validated['birth_date'] ?? null,
+                    'id_type' => $validated['id_type'] ?? null,
+                    'id_number' => $validated['id_number'] ?? null,
                     'country' => $validated['country'] ?? null,
                     'city' => $validated['city'] ?? null,
                     'postal_code' => $validated['postal_code'] ?? null,

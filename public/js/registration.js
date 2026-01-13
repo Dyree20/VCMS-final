@@ -38,7 +38,10 @@ function showOverlayResult(isSuccess, message, subText = "") {
 // Attach registration form submit
 document.addEventListener('DOMContentLoaded', () => {
     const registrationForm = document.querySelector('.auth-register-container form');
-    if (!registrationForm) return;
+    if (!registrationForm) {
+        console.log('Registration form not found');
+        return;
+    }
 
     registrationForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -77,4 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showOverlayResult(false, "Something went wrong!", "Please try again.");
         }
     });
+
+    // Also handle registration from CTA panel button if it has a form
+    const ctaPanelButton = document.querySelector('.auth-register-cta-panel .auth-button');
+    if (ctaPanelButton && ctaPanelButton.tagName === 'BUTTON') {
+        ctaPanelButton.addEventListener('click', function(e) {
+            registrationForm.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 });

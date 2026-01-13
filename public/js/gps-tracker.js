@@ -5,7 +5,7 @@
 
 class EnforcerGPSTracker {
     constructor(options = {}) {
-        this.updateInterval = options.updateInterval || 30000; // 30 seconds
+        this.updateInterval = options.updateInterval || 20000; // 20 seconds
         this.enableHighAccuracy = options.enableHighAccuracy !== false;
         this.timeout = options.timeout || 10000;
         this.maxAge = options.maxAge || 0;
@@ -362,6 +362,14 @@ class EnforcerGPSTracker {
         const coords = position.coords;
         const timestamp = new Date(position.timestamp);
 
+        // Check if accuracy is acceptable (50 meters or better)
+        const MIN_ACCURACY = 50; // meters
+        if (coords.accuracy > MIN_ACCURACY) {
+            console.warn(`⚠️ GPS Accuracy too low (${coords.accuracy}m > ${MIN_ACCURACY}m threshold). Waiting for better signal...`);
+            this.updateLocationUI(coords);
+            return;
+        }
+
         console.log(`📍 Location Updated:
             - Latitude: ${coords.latitude}
             - Longitude: ${coords.longitude}
@@ -619,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const gpsContainer = document.getElementById('gps-tracker-container');
     if (gpsContainer) {
         window.gpsTracker = new EnforcerGPSTracker({
-            updateInterval: 30000, // 30 seconds
+            updateInterval: 20000, // 20 seconds
             enableHighAccuracy: true,
             timeout: 10000
         });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\UserStatus;
+use App\Models\EnforcerLocation;
 use App\Mail\PasswordResetEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,6 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'username' => 'required|string|max:255|unique:users,username',
             'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'required|integer',
         ]);
 
         $status = UserStatus::where('status', 'Pending')->firstOrFail();
@@ -38,7 +38,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
-            'role_id' => $validated['role_id'],
+            'role_id' => null,
             'status_id' => $status->id,
         ]);
 
@@ -201,6 +201,50 @@ class AuthController extends Controller
     // Optional: logout
     public function logout(Request $request)
     {
+        $user = Auth::user();
+
+        // Set enforcer status to offline when they log out
+        if ($user) {
+            // Load role relationship to check if enforcer
+            $user->load('role');
+            $roleName = strtolower($user->role->name ?? '');
+            
+            if ($roleName === 'enforcer') {
+                // Update all recent locations with offline status
+                EnforcerLocation::where('user_id', $user->id)
+                    ->where('created_at', '>=', now()->subHours(1))
+                    ->update(['status' => 'offline']);
+
+                // Create a new offline location record to ensure they show as offline
+                // Get their last location
+                $lastLocation = EnforcerLocation::where('user_id', $user->id)
+                    ->latest()
+                    ->first();
+
+                if ($lastLocation) {
+                    // Create new offline record with same location
+                    EnforcerLocation::create([
+                        'user_id' => $user->id,
+                        'latitude' => $lastLocation->latitude,
+                        'longitude' => $lastLocation->longitude,
+                        'accuracy_meters' => $lastLocation->accuracy_meters,
+                        'address' => $lastLocation->address,
+                        'status' => 'offline',
+                    ]);
+                } else {
+                    // No location history - create placeholder offline record
+                    EnforcerLocation::create([
+                        'user_id' => $user->id,
+                        'latitude' => 14.5995,
+                        'longitude' => 121.0012,
+                        'accuracy_meters' => 5000,
+                        'address' => 'Location not available',
+                        'status' => 'offline',
+                    ]);
+                }
+            }
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

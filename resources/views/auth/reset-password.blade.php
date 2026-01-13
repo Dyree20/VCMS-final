@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Reset Password</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/../../styles/authentication.css">
     <link rel="stylesheet" href="/../../styles/auth-overlay.css">
     <link rel="stylesheet" href="/../../styles/overlay.css">
@@ -27,8 +28,18 @@
                 <input type="hidden" name="email" value="{{ $email }}">
                 <input type="hidden" name="token" value="{{ $token }}">
                 
-                <input type="password" class="auth-input" placeholder="New Password" name="password" required>
-                <input type="password" class="auth-input" placeholder="Confirm Password" name="password_confirmation" required>
+                <div class="password-input-wrapper">
+                    <input type="password" class="auth-input password-input" placeholder="New Password" name="password" required>
+                    <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="password-input-wrapper">
+                    <input type="password" class="auth-input password-input" placeholder="Confirm Password" name="password_confirmation" required>
+                    <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 
                 <button type="submit" class="auth-button">Reset Password</button>
 
@@ -81,6 +92,27 @@
             overlay.classList.remove('hidden');
             spinner.style.display = 'block';
             message.textContent = 'Resetting password...';
+        });
+
+        // Password Toggle Functionality
+        document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const input = this.parentElement.querySelector('.password-input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    this.classList.add('visible');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    this.classList.remove('visible');
+                }
+            });
         });
     </script>
 </body>

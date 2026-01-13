@@ -95,7 +95,15 @@
                     <td><code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #007bff;">{{ $user->enforcer_id ?? 'N/A' }}</code></td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone ?? '—' }}</td>
-                    <td>{{ $user->role->name ?? '—' }}</td>
+                    <td class="role-cell">
+                        @if($user->role_id === null)
+                            <button class="select-role-btn" data-user-id="{{ $user->id }}" title="Assign a role to this user">
+                                <i class="fa-solid fa-user-tag"></i> Select Role
+                            </button>
+                        @else
+                            <span class="role-badge">{{ $user->role->name ?? '—' }}</span>
+                        @endif
+                    </td>
                     <td>
                         @php
                             // map database statuses to CSS classes
@@ -181,6 +189,43 @@
 
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Role Selection Modal -->
+<div id="roleSelectionModal" class="role-modal">
+    <div class="role-modal-content">
+        <div class="role-modal-header">
+            <h3>Assign Role to User</h3>
+            <button id="roleModalClose" class="role-modal-close">&times;</button>
+        </div>
+        <div class="role-modal-body">
+            <p class="role-modal-subtitle">Select a role for this user:</p>
+            <div class="role-options-container">
+                @php
+                    $roles = \App\Models\Role::all();
+                    $roleDescriptions = [
+                        'Admin' => 'Full system access and administrative privileges',
+                        'Enforcer' => 'Patrol and enforcement operations',
+                        'Front Desk' => 'Reception and customer service',
+                    ];
+                @endphp
+                @foreach($roles as $role)
+                    <button class="role-option" data-role-id="{{ $role->id }}" data-role-name="{{ $role->name }}">
+                        <div class="role-option-icon">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div class="role-option-content">
+                            <h4>{{ $role->name }}</h4>
+                            <p>{{ $roleDescriptions[$role->name] ?? 'Role' }}</p>
+                        </div>
+                        <div class="role-option-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </button>
+                @endforeach
+            </div>
+        </div>
     </div>
 </div>
 
@@ -352,5 +397,143 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('input', filterTable);
     statusFilter.addEventListener('change', filterTable);
     roleFilter.addEventListener('change', filterTable);
+
+    // Role Selection Modal Functionality
+    const roleModal = document.getElementById('roleSelectionModal');
+    const roleModalClose = document.getElementById('roleModalClose');
+    const selectRoleBtns = document.querySelectorAll('.select-role-btn');
+    let currentUserId = null;
+
+    // Open modal when Select Role button is clicked
+    selectRoleBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentUserId = this.getAttribute('data-user-id');
+            roleModal.style.display = 'flex';
+        });
+    });
+
+    // Close modal
+    if (roleModalClose) {
+        roleModalClose.addEventListener('click', function() {
+            roleModal.style.display = 'none';
+            currentUserId = null;
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === roleModal) {
+            roleModal.style.display = 'none';
+            currentUserId = null;
+        }
+    });
+
+    // Handle role selection
+    const roleOptions = document.querySelectorAll('.role-option');
+    roleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const roleId = this.getAttribute('data-role-id');
+            const roleName = this.getAttribute('data-role-name');
+            
+            if (!currentUserId || !roleId) return;
+
+            // Send request to assign role
+            fetch(`/users/${currentUserId}/assign-role`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    role_id: roleId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI - find the row and update the role cell
+                    const userRow = document.querySelector(`tr[data-user-id="${currentUserId}"]`);
+                    if (userRow) {
+                        const roleCell = userRow.querySelector('.role-cell');
+                        roleCell.innerHTML = `<span class="role-badge">${roleName}</span>`;
+                        userRow.setAttribute('data-role', roleName.toLowerCase());
+                        
+                        // Update enforcer_id if it was generated
+                        if (data.enforcer_id && data.enforcer_id !== null) {
+                            const userIdCell = userRow.querySelector('td:nth-child(3)');
+                            if (userIdCell) {
+                                userIdCell.innerHTML = `<code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #007bff;">${data.enforcer_id}</code>`;
+                            }
+                        }
+                    }
+                    
+                    // Close modal
+                    roleModal.style.display = 'none';
+                    currentUserId = null;
+                    
+                    // Show success message
+                    showNotification(`Role assigned to user successfully!`, 'success');
+                } else {
+                    showNotification(data.message || 'Failed to assign role', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error assigning role. Please try again.', 'error');
+            });
+        });
+    });
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>

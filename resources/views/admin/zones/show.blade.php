@@ -201,7 +201,7 @@
 
 <style>
     .zone-detail-container {
-        max-width: 900px;
+        max-width: 1200px;
         margin: 30px auto;
         padding: 20px;
     }
