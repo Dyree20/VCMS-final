@@ -98,7 +98,7 @@ class DashboardController extends Controller
             
             // Check if enforcer is online (location updated in last 30 seconds)
             $enforcer->is_online = $latestLocation && $latestLocation->created_at->greaterThan(now()->subSeconds(30));
-            $enforcer->online_status = $latestLocation ? $latestLocation->status : 'offline';
+            $enforcer->online_status = $enforcer->is_online ? 'online' : 'offline';
             $enforcer->last_seen = $latestLocation ? $latestLocation->created_at->diffForHumans() : 'Never';
             
             return $enforcer;
