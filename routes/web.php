@@ -136,8 +136,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/current-location', [GPSController::class, 'getCurrentLocation'])->name('current-location');
         Route::post('/set-status', [GPSController::class, 'setStatus'])->name('set-status');
         Route::get('/online-enforcers', [GPSController::class, 'getOnlineEnforcers'])->name('online-enforcers');
+        Route::get('/recent-enforcers', [GPSController::class, 'getRecentEnforcers'])->name('recent-enforcers');
+        Route::get('/all-enforcers', [GPSController::class, 'getAllEnforcersLocations'])->name('all-enforcers');
         Route::get('/location-history/{user}', [GPSController::class, 'getLocationHistory'])->name('location-history');
+        Route::get('/analytics/{user}', [GPSController::class, 'getLocationAnalytics'])->name('analytics');
         Route::get('/dashboard', function() { return view('admin.gps-tracking'); })->name('dashboard');
+        Route::get('/vehicle-tracking', function() { return view('admin.gps-tracking'); })->name('vehicle-tracking');
     });
 
     // Advanced Search
@@ -187,6 +191,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/enforcer/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('enforcer.profile');
     Route::get('/enforcer/profile/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('enforcer.profile.edit');
     Route::put('/enforcer/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('enforcer.profile.update');
+
+    // Enforcer Tracking Dashboard
+    Route::get('/enforcer/tracking', function() { 
+        return view('enforcer.tracking-dashboard'); 
+    })->name('enforcer.tracking');
+    Route::get('/enforcer/dashboard', [\App\Http\Controllers\EnforcerController::class, 'dashboard'])->name('enforcer.dashboard');
+
 
     // Teams Management (Admin only)
     Route::resource('teams', \App\Http\Controllers\TeamController::class);

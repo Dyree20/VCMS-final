@@ -34,15 +34,46 @@ class GPSController extends Controller
         }
 
         try {
-            // Create new location record
-            $location = EnforcerLocation::create([
-                'user_id' => $user->id,
-                'latitude' => $validated['latitude'],
-                'longitude' => $validated['longitude'],
-                'accuracy_meters' => $validated['accuracy'],
-                'address' => $validated['address'],
-                'status' => 'online',
-            ]);
+            // Attempt to update a recent placeholder 'online' record first
+            $lastLocation = EnforcerLocation::where('user_id', $user->id)
+                ->latest()
+                ->first();
+
+            $shouldUpdateLast = false;
+
+            if ($lastLocation) {
+                // Consider it a placeholder if address indicates not available
+                // or accuracy is very large (placeholder uses 5000)
+                $isPlaceholderAddress = strcasecmp($lastLocation->address ?? '', 'Location not available') === 0;
+                $isHighAccuracy = is_numeric($lastLocation->accuracy_meters) && $lastLocation->accuracy_meters >= 5000;
+
+                // Only update recent placeholders (last 10 minutes)
+                if (($isPlaceholderAddress || $isHighAccuracy) && $lastLocation->created_at >= now()->subMinutes(10)) {
+                    $shouldUpdateLast = true;
+                }
+            }
+
+            if ($shouldUpdateLast && $lastLocation) {
+                $lastLocation->update([
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'accuracy_meters' => $validated['accuracy'],
+                    'address' => $validated['address'],
+                    'status' => 'online',
+                ]);
+
+                $location = $lastLocation->fresh();
+            } else {
+                // Create new location record
+                $location = EnforcerLocation::create([
+                    'user_id' => $user->id,
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'accuracy_meters' => $validated['accuracy'],
+                    'address' => $validated['address'],
+                    'status' => 'online',
+                ]);
+            }
 
             // Delete old location records (keep only last 100)
             EnforcerLocation::where('user_id', $user->id)
@@ -69,11 +100,20 @@ class GPSController extends Controller
     {
         $user = auth()->user();
 
-        if (strtolower($user->role->name ?? '') !== 'enforcer') {
+        $userRole = strtolower($user->role->name ?? '');
+
+        // Determine which user's location to fetch
+        $targetUserId = $user->id;
+        
+        // If admin, they can view any location (from query param or authenticated user)
+        if ($userRole === 'admin') {
+            $targetUserId = request()->query('user_id', $user->id);
+        } elseif ($userRole !== 'enforcer') {
+            // Other roles can't access this
             return response()->json(['error' => 'Only enforcers can access this'], 403);
         }
 
-        $location = EnforcerLocation::where('user_id', $user->id)
+        $location = EnforcerLocation::where('user_id', $targetUserId)
             ->latest()
             ->first();
 
@@ -86,13 +126,16 @@ class GPSController extends Controller
 
     /**
      * Get all online enforcers (for admin dashboard)
+     * Only returns enforcers whose LATEST location has status='online' AND is recent (< 30 seconds)
      */
     public function getOnlineEnforcers(): JsonResponse
     {
         $thirtySecondsAgo = now()->subSeconds(30);
 
-        // Get all enforcers
-        $allEnforcers = User::with('role')
+        // Get all enforcers with their LATEST location (by updated_at so status changes count)
+        $enforcers = User::with(['role', 'locations' => function($q) {
+            $q->latest('updated_at')->limit(1);
+        }])
             ->whereHas('role', function ($q) {
                 $q->where('name', 'like', '%enforcer%');
             })
@@ -100,16 +143,18 @@ class GPSController extends Controller
 
         $onlineEnforcers = collect();
 
-        // For each enforcer, get their LATEST location record and check if it's online
-        foreach ($allEnforcers as $enforcer) {
-            $lastLocation = EnforcerLocation::with('user')
-                ->where('user_id', $enforcer->id)
-                ->latest('created_at')
-                ->first();
-
-            // Only include if latest status is 'online' and from last 30 seconds
-            if ($lastLocation && $lastLocation->status === 'online' && $lastLocation->created_at >= $thirtySecondsAgo) {
-                $onlineEnforcers->push($lastLocation);
+        // Check each enforcer's LATEST status
+        foreach ($enforcers as $enforcer) {
+            if ($enforcer->locations->isNotEmpty()) {
+                $lastLocation = $enforcer->locations->first();
+                
+                // Must be 'online' status AND recent (within 30 seconds)
+                // Use updated_at because setStatus() may update status (and updated_at)
+                if ($lastLocation->status === 'online' && $lastLocation->updated_at >= $thirtySecondsAgo) {
+                    // Ensure the location record includes user data for frontend display
+                    $lastLocation->setRelation('user', $enforcer->makeHidden(['password', 'remember_token']));
+                    $onlineEnforcers->push($lastLocation);
+                }
             }
         }
 
@@ -118,6 +163,168 @@ class GPSController extends Controller
             'count' => $onlineEnforcers->count(),
             'enforcers' => $onlineEnforcers,
         ]);
+    }
+
+    /**
+     * Get all recent enforcer locations (last 5 minutes) - for demo/local network
+     */
+    public function getRecentEnforcers(): JsonResponse
+    {
+        $fiveMinutesAgo = now()->subMinutes(5);
+
+        // Get all enforcers with recent locations
+        $recentEnforcers = EnforcerLocation::with('user')
+            ->where('created_at', '>=', $fiveMinutesAgo)
+            ->latest('created_at')
+            ->get()
+            ->unique('user_id')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'count' => $recentEnforcers->count(),
+            'enforcers' => $recentEnforcers,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get all enforcers with latest locations
+     */
+    public function getAllEnforcersLocations(): JsonResponse
+    {
+        // Get all enforcers
+        $allEnforcers = User::with('role')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'like', '%enforcer%');
+            })
+            ->get();
+
+        $enforcersWithLocations = collect();
+
+        foreach ($allEnforcers as $enforcer) {
+            $lastLocation = EnforcerLocation::with('user')
+                ->where('user_id', $enforcer->id)
+                ->latest('created_at')
+                ->first();
+
+            if ($lastLocation) {
+                $enforcersWithLocations->push($lastLocation);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'count' => $enforcersWithLocations->count(),
+            'enforcers' => $enforcersWithLocations,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get location analytics for an enforcer
+     */
+    public function getLocationAnalytics(User $user, Request $request): JsonResponse
+    {
+        $hours = $request->query('hours', 24);
+
+        $locations = EnforcerLocation::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subHours($hours))
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($locations->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No location data available',
+            ], 404);
+        }
+
+        // Calculate statistics
+        $totalDistance = $this->calculateTotalDistance($locations);
+        $totalTime = $locations->first()->created_at->diffInMinutes($locations->last()->created_at);
+        $avgAccuracy = $locations->avg('accuracy_meters');
+        $maxDistance = $this->calculateMaxDistance($locations);
+
+        return response()->json([
+            'success' => true,
+            'enforcer' => $user->load('role'),
+            'period_hours' => $hours,
+            'location_count' => $locations->count(),
+            'total_distance_km' => round($totalDistance, 2),
+            'total_time_minutes' => $totalTime,
+            'average_accuracy_m' => round($avgAccuracy, 2),
+            'max_distance_from_start_km' => round($maxDistance, 2),
+            'locations' => $locations,
+            'first_location' => $locations->first(),
+            'last_location' => $locations->last(),
+        ]);
+    }
+
+    /**
+     * Calculate total distance traveled
+     */
+    private function calculateTotalDistance($locations): float
+    {
+        if ($locations->count() < 2) {
+            return 0;
+        }
+
+        $distance = 0;
+        $prev = null;
+
+        foreach ($locations as $location) {
+            if ($prev) {
+                $distance += $this->getDistanceFromCoordinates(
+                    $prev->latitude, $prev->longitude,
+                    $location->latitude, $location->longitude
+                );
+            }
+            $prev = $location;
+        }
+
+        return $distance;
+    }
+
+    /**
+     * Calculate maximum distance from starting point
+     */
+    private function calculateMaxDistance($locations): float
+    {
+        if ($locations->count() < 1) {
+            return 0;
+        }
+
+        $start = $locations->first();
+        $maxDistance = 0;
+
+        foreach ($locations as $location) {
+            $distance = $this->getDistanceFromCoordinates(
+                $start->latitude, $start->longitude,
+                $location->latitude, $location->longitude
+            );
+            $maxDistance = max($maxDistance, $distance);
+        }
+
+        return $maxDistance;
+    }
+
+    /**
+     * Calculate distance between two coordinates (Haversine formula)
+     */
+    private function getDistanceFromCoordinates(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $R = 6371; // Earth radius in km
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $R * $c;
     }
 
     /**

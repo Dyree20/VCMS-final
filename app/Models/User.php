@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $this->belongsTo(UserStatus::class, 'status_id');
     }
 
+    public function locations()
+    {
+        return $this->hasMany(EnforcerLocation::class, 'user_id');
+    }
+
     public function parkingZone()
     {
         return $this->belongsTo(ParkingZone::class, 'parking_zone_id');

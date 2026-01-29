@@ -1118,7 +1118,12 @@
     })();
 </script>
 
-@stack('scripts') 
+@stack('scripts')
+
+{{-- Location Tracking for Enforcers --}}
+@if(auth()->user() && strtolower(auth()->user()->role->name ?? '') === 'enforcer')
+    <script src="{{ asset('js/location-tracker.js') }}"></script>
+@endif
 
 </body>
 </html>

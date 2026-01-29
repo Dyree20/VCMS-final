@@ -210,37 +210,39 @@ class AuthController extends Controller
             $roleName = strtolower($user->role->name ?? '');
             
             if ($roleName === 'enforcer') {
-                // Update all recent locations with offline status
-                EnforcerLocation::where('user_id', $user->id)
-                    ->where('created_at', '>=', now()->subHours(1))
-                    ->update(['status' => 'offline']);
+                // Only set offline if this is the last active device for the user
+                $activeDevicesCount = $user->devices()->where('is_active', true)->count();
 
-                // Create a new offline location record to ensure they show as offline
-                // Get their last location
-                $lastLocation = EnforcerLocation::where('user_id', $user->id)
-                    ->latest()
-                    ->first();
+                if ($activeDevicesCount <= 1) {
+                    // Update all recent locations with offline status
+                    EnforcerLocation::where('user_id', $user->id)
+                        ->where('created_at', '>=', now()->subHours(1))
+                        ->update(['status' => 'offline']);
 
-                if ($lastLocation) {
-                    // Create new offline record with same location
-                    EnforcerLocation::create([
-                        'user_id' => $user->id,
-                        'latitude' => $lastLocation->latitude,
-                        'longitude' => $lastLocation->longitude,
-                        'accuracy_meters' => $lastLocation->accuracy_meters,
-                        'address' => $lastLocation->address,
-                        'status' => 'offline',
-                    ]);
-                } else {
-                    // No location history - create placeholder offline record
-                    EnforcerLocation::create([
-                        'user_id' => $user->id,
-                        'latitude' => 14.5995,
-                        'longitude' => 121.0012,
-                        'accuracy_meters' => 5000,
-                        'address' => 'Location not available',
-                        'status' => 'offline',
-                    ]);
+                    // Create a new offline location record to ensure they show as offline
+                    $lastLocation = EnforcerLocation::where('user_id', $user->id)
+                        ->latest()
+                        ->first();
+
+                    if ($lastLocation) {
+                        EnforcerLocation::create([
+                            'user_id' => $user->id,
+                            'latitude' => $lastLocation->latitude,
+                            'longitude' => $lastLocation->longitude,
+                            'accuracy_meters' => $lastLocation->accuracy_meters,
+                            'address' => $lastLocation->address,
+                            'status' => 'offline',
+                        ]);
+                    } else {
+                        EnforcerLocation::create([
+                            'user_id' => $user->id,
+                            'latitude' => 14.5995,
+                            'longitude' => 121.0012,
+                            'accuracy_meters' => 5000,
+                            'address' => 'Location not available',
+                            'status' => 'offline',
+                        ]);
+                    }
                 }
             }
         }
